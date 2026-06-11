@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agro Forte – Programa Agrinho</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Nunito:wght@400;600;700;800;900&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gd:#163d16;--gm:#2a622a;--gl:#3d7a1a;
+  --gold:#f5e87a;--mint:#a8e878;--red:#ff5555;--orange:#ff9933;
+  --panel:rgba(0,0,0,.32);--r:12px;--rs:8px;--rt:20px;
+}
+body{font-family:'Nunito',sans-serif;background:radial-gradient(ellipse at top,#1a4a1a,#060e06);
+  min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:8px 4px 40px}
+#app{width:100%;max-width:520px;border-radius:20px;overflow:hidden;
+  box-shadow:0 28px 80px rgba(0,0,0,.85);position:relative;color:#fff;
+  background:linear-gradient(175deg,var(--gd) 0%,var(--gm) 55%,var(--gl) 100%)}
+#toast{position:absolute;top:4px;left:50%;transform:translateX(-50%);
+  background:rgba(10,30,10,.95);border:1px solid rgba(245,232,122,.3);
+  color:var(--gold);padding:7px 18px;border-radius:var(--rt);
+  font-size:12px;font-weight:700;opacity:0;pointer-events:none;
+  transition:opacity .25s;z-index:300;max-width:92%;text-align:center;line-height:1.4}
+#toast.on{opacity:1}
+#toast.bad{color:var(--red);border-color:rgba(255,85,85,.3)}
+#toast.good{color:var(--mint);border-color:rgba(168,232,120,.3)}
+#hud{display:none;background:rgba(0,0,0,.5);padding:8px 12px 6px;
+  border-bottom:1px solid rgba(255,255,255,.08);flex-wrap:wrap;gap:4px;align-items:center}
+#hud.on{display:flex}
+.hb{background:var(--gold);color:var(--gd);border-radius:var(--rt);padding:3px 10px;
+  font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.3px;flex-shrink:0}
+.hb.red{background:var(--red);color:#fff;animation:blink .6s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.hs{display:flex;align-items:center;gap:3px;background:rgba(255,255,255,.1);
+  border-radius:var(--rt);padding:3px 9px;font-size:10px;font-weight:700;flex-shrink:0}
+.hs.warn{background:rgba(255,80,80,.22);color:var(--red);border:1px solid rgba(255,80,80,.4)}
+.hbars{width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-top:2px}
+.hbw{display:flex;flex-direction:column}
+.hbl{display:flex;justify-content:space-between;font-size:9px;color:var(--mint);margin-bottom:2px}
+.hbr{background:rgba(255,255,255,.14);border-radius:4px;height:4px;overflow:hidden}
+.hbf{height:100%;border-radius:4px;transition:width .4s}
+.hbf.xp{background:linear-gradient(90deg,#90e850,var(--gold))}
+.hbf.sta{background:linear-gradient(90deg,#44aaff,#88ccff)}
+.hbf.sto{background:linear-gradient(90deg,var(--orange),var(--red))}
+.sc{display:none;padding:18px 16px}.sc.on{display:block}
+.sct{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--gold);margin-bottom:2px}
+.scs{font-size:11px;color:var(--mint);font-weight:600;margin-bottom:12px}
+.card{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.13);border-radius:var(--r);padding:12px}
+.card.gold{border-color:rgba(245,232,122,.4);background:rgba(245,232,122,.06)}
+.card.red{border-color:rgba(255,85,85,.45);background:rgba(255,85,85,.08)}
+.card.green{border-color:rgba(100,220,80,.35);background:rgba(100,220,80,.07)}
+.infobox{background:rgba(0,0,0,.22);border-radius:var(--rs);padding:9px 12px;font-size:11px;color:var(--mint);margin-bottom:9px;line-height:1.6}
+.warnbox{background:rgba(255,100,0,.1);border:1px solid rgba(255,140,0,.3);border-radius:var(--rs);
+  padding:8px 12px;font-size:11px;color:#ffd090;margin-bottom:8px;line-height:1.5}
+.warnbox.crit{background:rgba(255,50,50,.15);border-color:rgba(255,80,80,.4);color:#ffb0b0}
+.btn{background:var(--gold);color:var(--gd);border:none;border-radius:var(--rt);
+  padding:11px 28px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:900;
+  cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 3px 12px rgba(0,0,0,.35)}
+.btn:hover{transform:scale(1.05)}
+.btnf{width:100%;background:var(--gold);color:var(--gd);border:none;border-radius:var(--rt);
+  padding:11px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:900;
+  cursor:pointer;transition:transform .14s,opacity .14s;margin-top:10px}
+.btnf:hover{transform:scale(1.015)}
+.btnf:disabled{opacity:.3;cursor:default;transform:none}
+.btng{background:rgba(255,255,255,.08);color:#fff;border:1.5px solid rgba(255,255,255,.18);
+  border-radius:var(--rt);padding:9px 14px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;
+  cursor:pointer;text-align:left;transition:all .14s;width:100%;margin-bottom:6px}
+.btng:hover:not(:disabled){background:rgba(245,232,122,.16);border-color:var(--gold)}
+.btng:disabled{opacity:.28;pointer-events:none}
+.btnsm{border:none;border-radius:12px;padding:5px 10px;font-family:'Nunito',sans-serif;
+  font-size:10px;font-weight:800;cursor:pointer;transition:transform .13s;display:block;width:100%;margin-top:5px}
+.btnsm:hover{transform:scale(1.06)}
+.btnsm:disabled{opacity:.28;cursor:default;transform:none}
+.btnbuy{background:#2a8c30;color:#fff}
+.btncol{background:#2a7a9a;color:#fff}
+#s-start{text-align:center;padding:28px 16px}
+.logo{font-size:56px;filter:drop-shadow(0 4px 10px #000a);animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+#s-start h1{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;
+  color:var(--gold);text-shadow:0 2px 16px #000a;line-height:1.15;margin:8px 0 2px}
+.stag{font-size:10px;color:var(--mint);letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-bottom:14px}
+.featgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:14px 0 16px;text-align:left}
+.feat{background:rgba(255,255,255,.07);border-radius:var(--rs);padding:8px 10px;
+  font-size:10px;color:var(--mint);display:flex;align-items:center;gap:7px}
+.feat strong{color:#fff;display:block;font-size:11px}
+.timebar{background:rgba(0,0,0,.3);border-radius:var(--rs);padding:9px 12px;
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px}
+.marea{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.13);
+  border-radius:var(--r);padding:12px 10px;cursor:pointer;transition:all .18s;text-align:center}
+.marea:hover:not(.lk){background:rgba(245,232,122,.14);border-color:var(--gold);transform:translateY(-2px)}
+.marea.lk{opacity:.32;cursor:default}
+.marea .mai{font-size:28px;margin-bottom:4px}
+.marea .man{font-size:12px;font-weight:800}
+.marea .mad{font-size:9px;color:var(--mint);margin-top:2px}
+.marea .malk{font-size:9px;color:var(--orange);font-weight:700;margin-top:3px}
+.allist{margin-bottom:8px}
+.al{display:flex;align-items:center;gap:7px;background:rgba(255,100,0,.1);
+  border:1px solid rgba(255,140,0,.25);border-radius:var(--rs);padding:6px 10px;
+  margin-bottom:5px;font-size:10px;color:#ffd090}
+.al.crit{background:rgba(255,50,50,.15);border-color:rgba(255,80,80,.35);color:#ffb0b0}
+.fgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px}
+.cell{aspect-ratio:1;min-height:50px;background:rgba(130,80,20,.4);
+  border:1.5px solid rgba(130,80,20,.55);border-radius:var(--rs);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-size:17px;cursor:pointer;transition:all .16s;user-select:none;position:relative}
+.cell:hover:not(.lkcell){background:rgba(130,80,20,.7);border-color:var(--gold);transform:scale(1.05)}
+.cell.planted{background:rgba(40,100,40,.45);border-color:rgba(90,190,50,.5)}
+.cell.ready{background:rgba(245,232,122,.16);border-color:var(--gold);animation:pu 1.3s ease-in-out infinite}
+@keyframes pu{0%,100%{box-shadow:0 0 0 0 rgba(245,232,122,.4)}50%{box-shadow:0 0 0 5px rgba(245,232,122,0)}}
+.cell.depleted{background:rgba(60,30,5,.5);border-color:rgba(150,80,20,.35)}
+.cell.lkcell{opacity:.35;cursor:not-allowed;border-style:dashed}
+@keyframes pp{0%{transform:scale(0)}65%{transform:scale(1.25)}100%{transform:scale(1)}}
+.cell.pop{animation:pp .35s ease}
+.cti{position:absolute;bottom:2px;right:3px;font-size:8px;color:var(--mint);font-weight:700}
+.csi{position:absolute;top:2px;left:3px;font-size:9px}
+.actrow{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:9px}
+.actb{background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);
+  border-radius:var(--rs);padding:7px 3px;cursor:pointer;text-align:center;
+  transition:all .15s;font-size:9px;font-weight:700;line-height:1.3}
+.actb:hover:not(.disa){background:rgba(245,232,122,.16);border-color:var(--gold)}
+.actb.sel{background:rgba(245,232,122,.2);border-color:var(--gold)}
+.actb.disa{opacity:.3;cursor:not-allowed}
+.actb .abi{font-size:19px;display:block;margin-bottom:2px}
+.shsec{margin-bottom:14px}
+.shsect{font-size:11px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px}
+.shitem{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);border-radius:var(--rs);padding:8px 10px;margin-bottom:5px}
+.shitem .sie{font-size:20px;flex-shrink:0}
+.shitem .sii{flex:1}
+.shitem .sin{font-size:12px;font-weight:700}
+.shitem .sid{font-size:9px;color:var(--mint);margin-top:1px}
+.shitem .sip{font-size:10px;color:var(--gold);font-weight:700;margin-top:2px}
+.btnsh{background:#2a8c30;color:#fff;border:none;border-radius:12px;padding:5px 11px;
+  font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;cursor:pointer;
+  flex-shrink:0;transition:transform .13s}
+.btnsh:hover{transform:scale(1.07)}
+.btnsh:disabled{opacity:.28;cursor:default;transform:none}
+.animgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.animc{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.13);
+  border-radius:var(--rs);padding:9px 6px;text-align:center}
+.animc.owned{border-color:#60cc60;background:rgba(100,200,80,.09)}
+.animc.sick-a{border-color:var(--red);background:rgba(255,80,80,.09);animation:blink .7s infinite}
+.ae{font-size:26px;display:block;margin-bottom:3px}
+.an2{font-size:10px;font-weight:800}
+.ap{font-size:9px;color:var(--mint);margin-top:1px}
+.ac2{font-size:10px;color:var(--gold);font-weight:700;margin-top:2px}
+.machgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.machc{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);
+  border-radius:var(--r);padding:10px 9px;text-align:center}
+.machc.owned{border-color:#60cc60;background:rgba(100,200,80,.08)}
+.machc.unaf{opacity:.33}
+.mce{font-size:26px;margin-bottom:4px}
+.mcn{font-size:11px;font-weight:800}
+.mcd{font-size:9px;color:var(--mint);margin-top:1px;line-height:1.4}
+.mcr{font-size:9px;color:var(--orange);font-weight:700;margin-top:2px}
+.mcp{font-size:10px;color:var(--gold);font-weight:700;margin-top:3px}
+.npcd{background:rgba(0,0,0,.35);border:1.5px solid var(--gold);border-radius:var(--r);padding:13px;margin-bottom:12px}
+.npch{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.npca{font-size:32px}
+.npcn{font-size:13px;font-weight:800;color:var(--gold)}
+.npcr{font-size:9px;color:var(--mint);text-transform:uppercase;letter-spacing:.5px}
+.npcs{font-size:12px;color:#ddf0c8;line-height:1.65}
+.mkti{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.09);border-radius:var(--rs);padding:8px 10px;margin-bottom:6px}
+.mkte{font-size:20px;flex-shrink:0}
+.mktin{flex:1;font-size:11px}
+.mktn{font-weight:700}
+.mktp{color:#80e850;font-size:10px;font-weight:600;margin-top:1px}
+.btnsl{background:#246a28;color:#fff;border:none;border-radius:12px;padding:6px 12px;
+  font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;cursor:pointer;
+  white-space:nowrap;flex-shrink:0;transition:transform .13s}
+.btnsl:hover{transform:scale(1.07)}
+.btnsl:disabled{opacity:.28;cursor:default;transform:none}
+.misslist{display:flex;flex-direction:column;gap:7px;margin-bottom:10px}
+.missi{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);
+  border-radius:var(--rs);padding:10px 12px;display:flex;align-items:center;gap:8px}
+.missi.done{border-color:#4caf50;background:rgba(76,175,80,.09)}
+.missi.active{border-color:rgba(245,232,122,.4);background:rgba(245,232,122,.05)}
+.mie{font-size:20px;flex-shrink:0}
+.mii{flex:1}
+.min{font-size:12px;font-weight:800}
+.mid{font-size:10px;color:var(--mint);margin-top:1px}
+.mip{font-size:10px;color:var(--gold);font-weight:700;margin-top:3px}
+.mic{font-size:17px;flex-shrink:0}
+.achgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.achc{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);
+  border-radius:var(--rs);padding:9px 8px;text-align:center}
+.achc.ul{border-color:rgba(245,232,122,.5);background:rgba(245,232,122,.09)}
+.achc.lk2{opacity:.35}
+.ache{font-size:24px;margin-bottom:3px}
+.achn{font-size:11px;font-weight:800}
+.achd{font-size:9px;color:var(--mint);margin-top:1px;line-height:1.3}
+.bosscard{text-align:center;background:rgba(0,0,0,.35);border:2px solid var(--red);
+  border-radius:var(--r);padding:14px;margin-bottom:10px;animation:bp 1.5s ease-in-out infinite}
+@keyframes bp{0%,100%{border-color:rgba(255,85,85,.8)}50%{border-color:rgba(255,85,85,.3)}}
+.bossi{font-size:50px;margin-bottom:6px;display:block}
+.bossn{font-size:16px;font-weight:800;color:var(--red);margin-bottom:4px}
+.bosst{font-size:11px;color:#ffcccc;line-height:1.5;margin-bottom:8px}
+.bosshpw{margin:6px 0}
+.bosshpl{display:flex;justify-content:space-between;font-size:9px;color:var(--red);font-weight:700;margin-bottom:3px}
+.bosshpb{background:rgba(255,255,255,.14);border-radius:6px;height:8px;overflow:hidden}
+.bosshpf{background:linear-gradient(90deg,#ff4444,#ff1111);height:100%;border-radius:6px;transition:width .5s}
+.battacts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.battlelog{background:rgba(0,0,0,.25);border-radius:var(--rs);padding:8px 10px;
+  font-size:10px;color:var(--mint);line-height:1.8;margin-top:8px;min-height:50px}
+.ll.dmg{color:#ff9090}.ll.hit{color:#90ff90}.ll.info{color:var(--gold)}
+.evcard{background:rgba(0,0,0,.3);border-left:4px solid var(--gold);border-radius:var(--rs);padding:13px;margin-bottom:11px}
+.evcard.bad{border-left-color:var(--red)}
+.evi{font-size:38px;text-align:center;margin-bottom:7px}
+.evt{font-size:14px;font-weight:800;color:var(--gold);margin-bottom:4px}
+.evcard.bad .evt{color:var(--red)}
+.evtxt{font-size:11px;color:#ddf0c8;line-height:1.65}
+#s-end{text-align:center;padding:32px 18px}
+#s-end h2{font-family:'Playfair Display',serif;font-size:24px;font-weight:900;color:var(--gold);margin-bottom:4px}
+.fscore{font-size:38px;font-weight:900;color:#fff;margin:8px 0 2px}
+.flbl{font-size:10px;color:var(--mint);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.frbadge{display:inline-block;border:2px solid var(--gold);background:rgba(245,232,122,.12);
+  border-radius:var(--rt);padding:6px 20px;font-size:13px;font-weight:800;color:var(--gold);margin-bottom:14px}
+.frbadge.fail{border-color:var(--red);color:var(--red);background:rgba(255,80,80,.1)}
+.fsgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;text-align:left}
+.fsc{background:rgba(255,255,255,.06);border-radius:var(--rs);padding:8px 10px}
+.fsc strong{color:var(--gold);font-size:13px;display:block}
+.fsc span{font-size:10px;color:var(--mint)}
+.fmsg{font-size:11px;color:var(--mint);line-height:1.65;
+  background:rgba(0,0,0,.22);border-left:3px solid var(--gold);border-radius:var(--rs);
+  padding:10px 12px;margin-bottom:16px;text-align:left}
+#nav{display:none;background:rgba(0,0,0,.5);padding:6px 8px;
+  border-top:1px solid rgba(255,255,255,.08);grid-template-columns:repeat(7,1fr);gap:2px}
+#nav.on{display:grid}
+.nb{background:transparent;border:none;color:rgba(255,255,255,.45);cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 1px;
+  border-radius:var(--rs);transition:all .13s;font-size:8px;font-weight:700}
+.nb:hover{background:rgba(255,255,255,.07);color:#fff}
+.nb.an{background:rgba(245,232,122,.13);color:var(--gold)}
+.nb .ni{font-size:16px}
+.nb.lknav{opacity:.3;pointer-events:none}
+.lbl{font-size:10px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.div{border:none;border-top:1px solid rgba(255,255,255,.09);margin:11px 0}
+/* ─── TUTORIAL ─── */
+#s-tutorial{display:none;padding:0}
+#s-tutorial.on{display:block}
+.tut-outer{width:100%;overflow:hidden}
+.tut-track{display:flex;transition:transform .38s cubic-bezier(.4,0,.2,1)}
+.tut-slide{min-width:100%;padding:16px 16px 10px;box-sizing:border-box}
+.tut-dots{display:flex;justify-content:center;gap:6px;padding:14px 0 4px}
+.tut-dot{width:28px;height:4px;border-radius:2px;background:rgba(255,255,255,.2);transition:all .3s;cursor:pointer}
+.tut-dot.cur{background:var(--gold);width:38px}
+.tut-dot.ok{background:var(--mint)}
+.tut-hero{font-size:52px;text-align:center;margin:4px 0 6px;display:block;
+  animation:thero 2.5s ease-in-out infinite}
+@keyframes thero{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.tut-h1{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;
+  color:var(--gold);text-align:center;margin-bottom:2px}
+.tut-h2{font-size:10px;color:var(--mint);font-weight:700;text-align:center;
+  text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}
+.tut-card{background:rgba(0,0,0,.28);border:1.5px solid rgba(255,255,255,.12);
+  border-radius:12px;padding:11px 13px;margin-bottom:8px}
+.tut-card.gold{border-color:rgba(245,232,122,.4);background:rgba(245,232,122,.07)}
+.tut-card.green{border-color:rgba(100,220,80,.35);background:rgba(100,220,80,.07)}
+.tut-card.red{border-color:rgba(255,85,85,.35);background:rgba(255,85,85,.07)}
+.tut-card.blue{border-color:rgba(80,160,255,.35);background:rgba(80,160,255,.07)}
+.tut-row{display:flex;align-items:flex-start;gap:9px;margin-bottom:6px}
+.tut-row:last-child{margin-bottom:0}
+.tut-ico{font-size:20px;flex-shrink:0;width:26px;text-align:center;margin-top:1px}
+.tut-txt{font-size:11px;color:#ddf0c8;line-height:1.55}
+.tut-txt strong{color:#fff}
+.tut-tip{border-left:3px solid var(--gold);background:rgba(245,232,122,.08);
+  border-radius:0 8px 8px 0;padding:8px 11px;font-size:11px;color:#ffe8a0;
+  line-height:1.6;margin-bottom:8px}
+.tut-tip.red{border-left-color:var(--red);background:rgba(255,85,85,.08);color:#ffc0c0}
+.tut-tip.green{border-left-color:var(--mint);background:rgba(168,232,120,.08);color:#c0ffc0}
+.tut-g2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.tut-box{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+  border-radius:8px;padding:8px 6px;text-align:center}
+.tut-box .bi{font-size:20px;display:block;margin-bottom:3px}
+.tut-box .bn{font-size:11px;font-weight:800;color:#fff}
+.tut-box .bd{font-size:9px;color:var(--mint);margin-top:2px;line-height:1.35}
+.tut-barwrap{margin:3px 0 2px}
+.tut-barlbl{display:flex;justify-content:space-between;font-size:9px;color:var(--mint);margin-bottom:2px}
+.tut-bar{background:rgba(255,255,255,.12);border-radius:3px;height:7px;overflow:hidden}
+.tut-fill{height:100%;border-radius:3px}
+.tut-seq{margin-bottom:8px}
+.tut-step{display:flex;gap:9px;margin-bottom:7px;align-items:flex-start}
+.tut-num{background:var(--gold);color:var(--gd);font-size:10px;font-weight:900;
+  min-width:20px;height:20px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0}
+.tut-stxt{font-size:11px;color:#ddf0c8;line-height:1.5}
+.tut-stxt strong{color:#fff}
+.tut-footer{display:flex;align-items:center;gap:8px;padding:8px 16px 6px}
+.tut-prev{background:rgba(255,255,255,.1);color:rgba(255,255,255,.65);
+  border:1.5px solid rgba(255,255,255,.2);border-radius:20px;
+  padding:9px 16px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;
+  cursor:pointer;transition:background .15s;flex-shrink:0}
+.tut-prev:hover{background:rgba(255,255,255,.18)}
+.tut-next{flex:1;background:var(--gold);color:var(--gd);border:none;border-radius:20px;
+  padding:10px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:900;
+  cursor:pointer;transition:transform .15s;box-shadow:0 3px 10px rgba(0,0,0,.35)}
+.tut-next:hover{transform:scale(1.03)}
+.tut-ctr{font-size:10px;color:rgba(255,255,255,.38);font-weight:700;
+  text-align:center;min-width:34px;flex-shrink:0}
+.tut-skip{display:block;width:100%;background:none;border:none;
+  color:rgba(255,255,255,.28);font-family:'Nunito',sans-serif;
+  font-size:10px;font-weight:700;cursor:pointer;padding:4px 0 10px;
+  transition:color .2s;text-align:center}
+.tut-skip:hover{color:rgba(255,255,255,.55)}
+</style>
+</head>
+<body>
+<div id="app">
+<div id="toast"></div>
+<div id="hud">
+  <div class="hb" id="ht">🌅 Manhã</div>
+  <div class="hs" id="hm">💰 R$ 500</div>
+  <div class="hs" id="hlv">⭐ Nv.1</div>
+  <div class="hs" id="hd">📅 Dia 1</div>
+  <div class="hbars">
+    <div class="hbw"><div class="hbl"><span>⚡ Stamina</span><span id="hsl">10/10</span></div><div class="hbr"><div class="hbf sta" id="hsb" style="width:100%"></div></div></div>
+    <div class="hbw"><div class="hbl"><span>⭐ XP</span><span id="hxl">0/100</span></div><div class="hbr"><div class="hbf xp" id="hxb" style="width:0%"></div></div></div>
+    <div class="hbw"><div class="hbl"><span>📦 Armazém</span><span id="hstl">0/50</span></div><div class="hbr"><div class="hbf sto" id="hstb" style="width:0%"></div></div></div>
+  </div>
+</div>
+<!-- ════════ TUTORIAL ════════ -->
+<div class="sc on" id="s-tutorial">
+  <div class="tut-dots" id="tut-dots"></div>
+  <div class="tut-outer">
+    <div class="tut-track" id="tut-track">
+
+      <!-- 0: Boas-vindas -->
+      <div class="tut-slide">
+        <span class="tut-hero">🌾</span>
+        <div class="tut-h1">Bem-vindo ao Agro Forte!</div>
+        <div class="tut-h2">Programa Agrinho – Paraná</div>
+        <div class="tut-tip green">Você herdou uma fazenda abandonada no Paraná. Em <strong>30 dias</strong>, transforme-a em referência do agronegócio paranaense!</div>
+        <div class="tut-card gold">
+          <div class="tut-row"><div class="tut-ico">🎯</div><div class="tut-txt"><strong>Objetivo:</strong> Maximize seu patrimônio plantando, criando animais, vendendo colheitas e derrotando 3 chefes que ameaçam sua fazenda.</div></div>
+        </div>
+        <div class="tut-g2">
+          <div class="tut-box"><span class="bi">📅</span><div class="bn">30 Dias</div><div class="bd">para crescer</div></div>
+          <div class="tut-box"><span class="bi">⭐</span><div class="bn">5 Níveis</div><div class="bd">de fazendeiro</div></div>
+          <div class="tut-box"><span class="bi">📜</span><div class="bn">10 Missões</div><div class="bd">e conquistas</div></div>
+          <div class="tut-box"><span class="bi">⚔️</span><div class="bn">3 Chefes</div><div class="bd">para derrotar</div></div>
+        </div>
+        <div class="tut-tip">Este tutorial tem <strong>7 telas</strong>. Use os botões abaixo para navegar.</div>
+      </div>
+
+      <!-- 1: Recursos -->
+      <div class="tut-slide">
+        <span class="tut-hero">⚡</span>
+        <div class="tut-h1">Seus Recursos</div>
+        <div class="tut-h2">Gerencie bem — ou perca tudo</div>
+        <div class="tut-card gold">
+          <div class="tut-barlbl"><span>⚡ Stamina</span><span>10/10</span></div>
+          <div class="tut-bar"><div class="tut-fill" style="width:100%;background:linear-gradient(90deg,#44aaff,#88ccff)"></div></div>
+          <div class="tut-txt" style="margin-top:5px">Cada ação na fazenda gasta 1 stamina. Ao zerar, <strong>durma</strong> no mapa para recuperar tudo.</div>
+        </div>
+        <div class="tut-card green">
+          <div class="tut-barlbl"><span>⭐ XP</span><span>0/100</span></div>
+          <div class="tut-bar"><div class="tut-fill" style="width:25%;background:linear-gradient(90deg,#90e850,var(--gold))"></div></div>
+          <div class="tut-txt" style="margin-top:5px">Ganhe XP plantando e colhendo. Ao subir de nível, novas <strong>áreas e culturas</strong> são desbloqueadas.</div>
+        </div>
+        <div class="tut-card blue">
+          <div class="tut-barlbl"><span>📦 Armazém</span><span>0/50</span></div>
+          <div class="tut-bar"><div class="tut-fill" style="width:55%;background:linear-gradient(90deg,var(--orange),var(--red))"></div></div>
+          <div class="tut-txt" style="margin-top:5px">Capacidade de 50 unidades. Compre o <strong>Silo</strong> para ampliar para 80.</div>
+        </div>
+        <div class="tut-tip red">⚠️ Armazém cheio = colheita perdida! Sempre venda no Mercado antes de colher.</div>
+      </div>
+
+      <!-- 2: Tempo -->
+      <div class="tut-slide">
+        <span class="tut-hero">🕐</span>
+        <div class="tut-h1">Ciclo de Tempo</div>
+        <div class="tut-h2">O dia tem 6 períodos</div>
+        <div class="tut-g2">
+          <div class="tut-box"><span class="bi">🌄</span><div class="bn">Amanhecer</div><div class="bd">Loja abre logo</div></div>
+          <div class="tut-box"><span class="bi">🌅</span><div class="bn">Manhã</div><div class="bd">Melhor para plantar</div></div>
+          <div class="tut-box"><span class="bi">☀️</span><div class="bn">Tarde</div><div class="bd">Loja + Mercado abertos</div></div>
+          <div class="tut-box"><span class="bi">🌇</span><div class="bn">Anoitecer</div><div class="bd">Mercado ainda aberto</div></div>
+          <div class="tut-box"><span class="bi">🌙</span><div class="bn">Noite</div><div class="bd">Animais produzem</div></div>
+          <div class="tut-box"><span class="bi">⭐</span><div class="bn">Madrugada</div><div class="bd">Durma para avançar</div></div>
+        </div>
+        <div class="tut-tip">🏪 <strong>Loja:</strong> Amanhecer, Manhã e Tarde<br>🏭 <strong>Mercado:</strong> Tarde, Anoitecer e Noite</div>
+        <div class="tut-tip green">💡 Cada ação gasta 1 período. Planeje o que fazer em cada horário!</div>
+      </div>
+
+      <!-- 3: Fazenda -->
+      <div class="tut-slide">
+        <span class="tut-hero">🏡</span>
+        <div class="tut-h1">A Fazenda</div>
+        <div class="tut-h2">Plante, cuide e colha</div>
+        <div class="tut-seq">
+          <div class="tut-step"><div class="tut-num">1</div><div class="tut-stxt"><strong>Selecione a ação</strong> (Plantar, Colher, Regar, Adubar) na barra de ações.</div></div>
+          <div class="tut-step"><div class="tut-num">2</div><div class="tut-stxt"><strong>Clique numa parcela</strong> do campo para executar a ação.</div></div>
+          <div class="tut-step"><div class="tut-num">3</div><div class="tut-stxt">Aguarde os <strong>dias de crescimento</strong> — parcelas prontas ficam brilhando ✨.</div></div>
+          <div class="tut-step"><div class="tut-num">4</div><div class="tut-stxt"><strong>Colha</strong> e venda no Mercado para lucrar.</div></div>
+        </div>
+        <div class="tut-tip red">🌱 <strong>Solo:</strong> cada colheita drena o solo. Abaixo de 40% use fertilizante. Abaixo de 8% não planta!</div>
+        <div class="tut-g2">
+          <div class="tut-box"><span class="bi">🌽</span><div class="bn">Milho</div><div class="bd">2 dias • lucro rápido</div></div>
+          <div class="tut-box"><span class="bi">🌱</span><div class="bn">Soja</div><div class="bd">3 dias • bom lucro</div></div>
+          <div class="tut-box"><span class="bi">☕</span><div class="bn">Café</div><div class="bd">5 dias • muito lucrativo</div></div>
+          <div class="tut-box"><span class="bi">🧵</span><div class="bn">Algodão</div><div class="bd">6 dias • excelente lucro</div></div>
+        </div>
+      </div>
+
+      <!-- 4: Vila e Mercado -->
+      <div class="tut-slide">
+        <span class="tut-hero">🏘️</span>
+        <div class="tut-h1">Vila &amp; Mercado</div>
+        <div class="tut-h2">Compre, venda, evolua</div>
+        <div class="tut-card green">
+          <div class="tut-row"><div class="tut-ico">🏘️</div><div class="tut-txt"><strong>Vila Rural (Loja)</strong><br>Compre sementes, animais, insumos e máquinas. Aberta de manhã até a tarde.</div></div>
+        </div>
+        <div class="tut-card gold">
+          <div class="tut-row"><div class="tut-ico">🏭</div><div class="tut-txt"><strong>Mercado</strong><br>Venda sua produção. Os <strong>preços variam todo dia</strong> — venda quando estiverem altos!</div></div>
+        </div>
+        <div class="tut-card">
+          <div class="tut-row"><div class="tut-ico">🚚</div><div class="tut-txt"><strong>Caminhão:</strong> +20% em todas as vendas do mercado.</div></div>
+          <div class="tut-row"><div class="tut-ico">🏗️</div><div class="tut-txt"><strong>Silo:</strong> amplia o armazém de 50 para 80 unidades.</div></div>
+          <div class="tut-row"><div class="tut-ico">🚜</div><div class="tut-txt"><strong>Trator:</strong> acelera o crescimento das culturas.</div></div>
+        </div>
+        <div class="tut-tip green">💡 Eventos como "Expoagro" dão +30% nos preços. Guarde produção para vender nesses momentos!</div>
+      </div>
+
+      <!-- 5: Animais e NPCs -->
+      <div class="tut-slide">
+        <span class="tut-hero">🐄</span>
+        <div class="tut-h1">Animais &amp; NPCs</div>
+        <div class="tut-h2">Aliados importantes no campo</div>
+        <div class="tut-g2">
+          <div class="tut-box"><span class="bi">🐄</span><div class="bn">Vaca</div><div class="bd">🥛 Leite a cada 3 dias</div></div>
+          <div class="tut-box"><span class="bi">🐔</span><div class="bn">Galinha</div><div class="bd">🥚 Ovos a cada 2 dias</div></div>
+          <div class="tut-box"><span class="bi">🐷</span><div class="bn">Porco</div><div class="bd">🥩 Carne a cada 4 dias</div></div>
+          <div class="tut-box"><span class="bi">🐑</span><div class="bn">Ovelha</div><div class="bd">🧶 Lã a cada 3 dias</div></div>
+        </div>
+        <div class="tut-tip red">🦠 Animais podem ficar doentes! Use <strong>Vacina</strong> ou chame a <strong>Vet. Ana</strong> para curar.</div>
+        <div class="tut-card">
+          <div class="tut-row"><div class="tut-ico">👨‍🌾</div><div class="tut-txt"><strong>Agrinho</strong> — dicas e status da fazenda</div></div>
+          <div class="tut-row"><div class="tut-ico">👩‍⚕️</div><div class="tut-txt"><strong>Vet. Ana</strong> — cura animais doentes</div></div>
+          <div class="tut-row"><div class="tut-ico">👷</div><div class="tut-txt"><strong>Eng. Carlos</strong> — dicas de máquinas (Nv.2)</div></div>
+          <div class="tut-row"><div class="tut-ico">🧑‍💼</div><div class="tut-txt"><strong>Comerc. João</strong> — estratégias de venda</div></div>
+        </div>
+      </div>
+
+      <!-- 6: Chefes -->
+      <div class="tut-slide">
+        <span class="tut-hero">⚔️</span>
+        <div class="tut-h1">Chefes &amp; Eventos</div>
+        <div class="tut-h2">Desafios que testam sua gestão</div>
+        <div class="tut-card red">
+          <div class="tut-row"><div class="tut-ico">🦗</div><div class="tut-txt"><strong>Dia 7 — Rei dos Gafanhotos</strong><br>Use defensivos ou o Drone para vencer.</div></div>
+          <div class="tut-row"><div class="tut-ico">🔥</div><div class="tut-txt"><strong>Dia 16 — Seca Extrema</strong><br>Irrigação e açudes são sua melhor defesa.</div></div>
+          <div class="tut-row"><div class="tut-ico">🦠</div><div class="tut-txt"><strong>Dia 23 — Epidemia Animal</strong><br>Vacine ou chame a Vet. Ana.</div></div>
+        </div>
+        <div class="tut-tip">🎲 A cada <strong>3 dias</strong> ocorre um evento — bom (crédito rural, chuva) ou ruim (praga, geada). Sempre haverá uma escolha!</div>
+        <div class="tut-tip green" style="text-align:center;margin-bottom:4px">🏆 Derrotar os 3 chefes garante recompensas únicas!<br><strong>Boa sorte, fazendeiro!</strong> 🌾</div>
+      </div>
+
+    </div><!-- /tut-track -->
+  </div><!-- /tut-outer -->
+
+  <div class="tut-footer">
+    <button class="tut-prev" id="tut-prev">← Voltar</button>
+    <span class="tut-ctr" id="tut-ctr">1/7</span>
+    <button class="tut-next" id="tut-next">Próximo →</button>
+  </div>
+  <button class="tut-skip" id="tut-skip">Pular tutorial e jogar direto</button>
+</div>
+<!-- ════════ FIM TUTORIAL ════════ -->
+
+<div class="sc" id="s-start">
+  <div class="logo">🌾</div>
+  <h1>Agro Forte</h1>
+  <div class="stag">🌱 Programa Agrinho – Paraná</div>
+  <div class="card gold" style="margin:14px 0 16px;text-align:left">
+    <div style="font-size:10px;color:var(--gold);font-weight:800;text-transform:uppercase;margin-bottom:5px">👨‍🌾 Agrinho diz:</div>
+    <div style="font-size:12px;color:#ddf0c8;line-height:1.65">"Sua fazenda foi herdada e está abandonada. Você tem recursos limitados e uma stamina que precisa administrar. Planeje cada passo — o campo recompensa quem pensa antes de agir!"</div>
+  </div>
+  <div class="featgrid">
+    <div class="feat"><span>⚡</span><div><strong>Stamina Limitada</strong>Cada ação gasta energia</div></div>
+    <div class="feat"><span>📦</span><div><strong>Armazém Cheio</strong>50 un. máximo no início</div></div>
+    <div class="feat"><span>🌱</span><div><strong>Solo Desgasta</strong>Precisa adubar para plantar</div></div>
+    <div class="feat"><span>🔒</span><div><strong>Parcelas Bloqueadas</strong>Desbloqueie por missão</div></div>
+    <div class="feat"><span>🏪</span><div><strong>Loja com Horário</strong>Fechada à noite</div></div>
+    <div class="feat"><span>🐛</span><div><strong>3 Chefes</strong>Gafanhotos, Seca, Epidemia</div></div>
+    <div class="feat"><span>👥</span><div><strong>4 NPCs</strong>Agrinho, Ana, Carlos, João</div></div>
+    <div class="feat"><span>🗺️</span><div><strong>6 Áreas</strong>Fazenda, Vila, Mercado…</div></div>
+  </div>
+  <button class="btn" id="btn-start">🚜 Começar Jornada</button>
+</div>
+<div class="sc" id="s-map">
+  <div class="sct">🗺️ Mapa do Paraná</div>
+  <div class="scs" id="map-sub">Escolha onde ir</div>
+  <div class="timebar">
+    <div>
+      <div style="font-size:14px;font-weight:800;color:var(--gold)" id="mt-name">🌅 Manhã</div>
+      <div style="font-size:10px;color:var(--mint)" id="mt-info">Dia 1</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:20px" id="mt-wi">☀️</div>
+      <div style="font-size:9px;color:var(--mint)" id="mt-wn">Sol</div>
+    </div>
+  </div>
+  <div id="map-alerts"></div>
+  <div class="mgrid" id="map-grid"></div>
+  <button class="btnf" id="btn-sleep" style="background:rgba(80,120,220,.2);color:#a0c0ff;border:1px solid rgba(80,120,220,.3);margin-top:0">🌙 Dormir — Recupera stamina total, avança para manhã</button>
+</div>
+<div class="sc" id="s-farm">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+    <div><div class="sct">🏡 Fazenda</div><div class="scs" id="farm-wx">☀️ Sol</div></div>
+    <div style="font-size:10px;color:var(--mint);text-align:right" id="farm-info"></div>
+  </div>
+  <div id="farm-alerts"></div>
+  <div class="lbl">Ação ativa:</div>
+  <div class="actrow" id="act-row"></div>
+  <div class="lbl">Campo — clique para agir:</div>
+  <div class="fgrid" id="field-grid"></div>
+  <div class="lbl" style="margin-top:4px">Sementes:</div>
+  <div id="seed-inv" style="font-size:10px;color:var(--mint);min-height:15px;margin-bottom:6px"></div>
+  <div class="lbl">Insumos:</div>
+  <div id="input-inv" style="font-size:10px;color:var(--mint);min-height:15px;margin-bottom:10px"></div>
+  <button class="btnf" id="btn-farm-map">🗺️ Voltar ao Mapa</button>
+</div>
+<div class="sc" id="s-shop">
+  <div class="sct">🏘️ Vila Rural</div>
+  <div class="scs">Loja agrícola — aberta de manhã até a tarde</div>
+  <div id="shop-closed" class="warnbox" style="display:none">⚠️ A loja está fechada! Volte de Manhã ou à Tarde.</div>
+  <div id="shop-body">
+    <div class="shsec"><div class="shsect">🌱 Sementes</div><div id="sh-seeds"></div></div>
+    <div class="shsec"><div class="shsect">🐄 Animais</div><div class="animgrid" id="sh-animals"></div></div>
+    <div class="shsec"><div class="shsect">🧪 Insumos</div><div id="sh-inputs"></div></div>
+    <div class="shsec"><div class="shsect">🚜 Máquinas</div><div class="machgrid" id="sh-machines"></div></div>
+  </div>
+  <button class="btnf" id="btn-shop-map">🗺️ Voltar ao Mapa</button>
+</div>
+<div class="sc" id="s-market">
+  <div class="sct">🏭 Mercado</div>
+  <div class="scs">Venda sua produção — preços variam todo dia</div>
+  <div id="mkt-body"></div>
+  <div class="div"></div>
+  <div class="lbl">Preços de hoje:</div>
+  <div id="mkt-prices" style="font-size:10px;color:var(--mint);line-height:2;margin-bottom:8px"></div>
+  <button class="btnf" id="btn-mkt-map">🗺️ Voltar ao Mapa</button>
+</div>
+<div class="sc" id="s-missions">
+  <div class="sct">📜 Missões &amp; Conquistas</div>
+  <div class="scs">Complete objetivos e ganhe XP e recompensas</div>
+  <div class="misslist" id="miss-list"></div>
+  <div class="div"></div>
+  <div class="lbl">🏆 Conquistas</div>
+  <div class="achgrid" id="ach-grid" style="margin-top:8px"></div>
+  <button class="btnf" id="btn-miss-map">🗺️ Voltar ao Mapa</button>
+</div>
+<div class="sc" id="s-event">
+  <div class="sct" id="ev-title">⚡ Evento</div>
+  <div class="scs" id="ev-sub">Um evento afeta sua fazenda</div>
+  <div id="ev-body"></div>
+</div>
+<div class="sc" id="s-boss">
+  <div class="sct" id="boss-title">⚔️ Batalha!</div>
+  <div class="scs">Defenda sua fazenda!</div>
+  <div id="boss-body"></div>
+</div>
+<div class="sc" id="s-npc">
+  <div class="sct" id="npc-title">👨‍🌾 Agrinho</div>
+  <div class="scs" id="npc-sub">Seu guia no campo</div>
+  <div id="npc-body"></div>
+  <button class="btnf" id="btn-npc-map">🗺️ Voltar ao Mapa</button>
+</div>
+<div class="sc" id="s-end">
+  <div style="font-size:50px;margin-bottom:7px" id="ei">🏆</div>
+  <h2 id="eh">Parabéns!</h2>
+  <p style="font-size:11px;color:var(--mint);margin-bottom:7px">Você completou sua jornada no Agro Forte</p>
+  <div class="fscore" id="es">R$ 0</div>
+  <div class="flbl">patrimônio final</div>
+  <div class="frbadge" id="er">🌾 Fazendeiro</div>
+  <div class="fsgrid" id="estats"></div>
+  <div class="fmsg">"O agro forte é construído com trabalho, tecnologia, inovação e respeito à natureza. O campo produz alimentos, gera empregos e impulsiona o desenvolvimento do Brasil." — Programa Agrinho</div>
+  <button class="btn" id="btn-restart">🔄 Jogar Novamente</button>
+</div>
+<div id="nav">
+  <button class="nb" id="nb-map"><span class="ni">🗺️</span>Mapa</button>
+  <button class="nb" id="nb-farm"><span class="ni">🏡</span>Fazenda</button>
+  <button class="nb" id="nb-shop"><span class="ni">🏘️</span>Vila</button>
+  <button class="nb" id="nb-mkt"><span class="ni">🏭</span>Mercado</button>
+  <button class="nb" id="nb-miss"><span class="ni">📜</span>Missões</button>
+  <button class="nb" id="nb-npc"><span class="ni">👨‍🌾</span>Agrinho</button>
+  <button class="nb lknav" id="nb-npcs"><span class="ni">👥</span>NPCs</button>
+</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  DADOS
+// ═══════════════════════════════════════════
+var MAX_STA=10, MAX_CELLS=8, TOTAL_DAYS=30;
+var SOIL_DRAIN=14, SOIL_REGEN=6;
+
+var CROPS=[
+  {id:'milho',  n:'Milho',  e:'🌽',cost:80,  grow:2,sell:120,xp:8, sta:1,sz:1,d:'Rápido, baixo lucro'},
+  {id:'soja',   n:'Soja',   e:'🌱',cost:120,grow:3,sell:200,xp:14,sta:1,sz:1,d:'Médio prazo, bom lucro'},
+  {id:'trigo',  n:'Trigo',  e:'🌾',cost:100,grow:3,sell:220,xp:14,sta:1,sz:1,d:'Bom para alimentos da cidade'},
+  {id:'cafe',   n:'Café',   e:'☕',cost:200,grow:5,sell:450,xp:24,sta:2,sz:2,d:'Lento, muito lucrativo',lvl:2},
+  {id:'algodao',n:'Algodão',e:'🧵',cost:300,grow:6,sell:700,xp:34,sta:2,sz:3,d:'Excelente lucro',lvl:3},
+];
+var ANIMALS=[
+  {id:'vaca',   n:'Vaca',   e:'🐄',cost:800, prod:'🥛',pn:'Leite',pid:'leite',pp:90, ev:3,xp:20,sz:1,lvl:1},
+  {id:'galinha',n:'Galinha',e:'🐔',cost:200, prod:'🥚',pn:'Ovos', pid:'ovos', pp:40, ev:2,xp:10,sz:1,lvl:1},
+  {id:'porco',  n:'Porco',  e:'🐷',cost:500, prod:'🥩',pn:'Carne',pid:'carne',pp:130,ev:4,xp:15,sz:1,lvl:1},
+  {id:'ovelha', n:'Ovelha', e:'🐑',cost:650, prod:'🧶',pn:'Lã',   pid:'la',   pp:110,ev:3,xp:18,sz:1,lvl:2},
+];
+var MACHINES=[
+  {id:'trator_b',  n:'Trator Básico',   e:'🚜',cost:1500,d:'+1 colheita/parcela, plantio mais rápido',lvl:1},
+  {id:'trator_a',  n:'Trator Avançado', e:'🚛',cost:4000,d:'-1 dia crescimento, plantio automático',  lvl:3},
+  {id:'colhei',    n:'Colheitadeira',   e:'🌾',cost:5000,d:'Colheita sem gastar stamina',             lvl:3},
+  {id:'caminhao',  n:'Caminhão',        e:'🚚',cost:3000,d:'+20% preço no mercado',                   lvl:2},
+  {id:'irrigacao', n:'Irrigação',       e:'💧',cost:1500,d:'Solo drena menos na seca',               lvl:2},
+  {id:'silo',      n:'Silo',            e:'🏗️',cost:2500,d:'Armazém: 50 → 80 unidades',             lvl:2},
+  {id:'solar',     n:'Energia Solar',   e:'☀️',cost:2000,d:'+2 stamina nos dias de sol',             lvl:3},
+  {id:'drone',     n:'Drone Agrícola',  e:'🤖',cost:3000,d:'+dano no boss gafanhotos',              lvl:3},
+];
+var INPUTS=[
+  {id:'ferti', n:'Fertilizante',e:'🧪',cost:150,d:'Restaura 35% solo de 1 parcela'},
+  {id:'pestic',n:'Pesticida',   e:'🛡️',cost:200,d:'Protege contra pragas por 2 dias'},
+  {id:'vacina',n:'Vacina',      e:'💉',cost:250,d:'Cura/previne epidemia animal'},
+  {id:'energy',n:'Energético',  e:'⚡',cost:100,d:'+3 stamina agora'},
+];
+var NPCS=[
+  {id:'agrinho',n:'Agrinho',        e:'👨‍🌾',r:'Mentor Rural',        lvl:1},
+  {id:'ana',    n:'Vet. Ana',       e:'👩‍⚕️',r:'Saúde Animal',       lvl:1},
+  {id:'carlos', n:'Eng. Carlos',    e:'👷', r:'Tecnologia Agrícola', lvl:2},
+  {id:'joao',   n:'Comerc. João',   e:'🧑‍💼',r:'Comércio',            lvl:1},
+];
+var AREAS=[
+  {id:'farm',   n:'Fazenda',    e:'🏡',d:'Plante e cultive',        fn:'goFarm',    lvl:1},
+  {id:'vila',   n:'Vila Rural', e:'🏘️',d:'Loja agrícola',           fn:'goShop',    lvl:1},
+  {id:'market', n:'Mercado',    e:'🏭',d:'Venda sua produção',      fn:'goMarket',  lvl:1},
+  {id:'rio',    n:'Rio',        e:'🌊',d:'Pesca e captação d\'água', fn:'goRio',     lvl:2},
+  {id:'floresta',n:'Floresta',  e:'🌲',d:'Madeira e frutas',        fn:'goForest',  lvl:3},
+  {id:'agro',   n:'Agroindustrial',e:'🏗️',d:'Exportações avançadas',fn:'goAgro',   lvl:5},
+];
+var WEATHER=[
+  {n:'Sol',       e:'☀️',gm:1.0,sd:0, note:'Condições normais'},
+  {n:'Chuva',     e:'🌧️',gm:1.3,sd:0, note:'Crescimento acelerado'},
+  {n:'Tempestade',e:'⛈️',gm:0.7,sd:6, note:'Risco de danos'},
+  {n:'Seca',      e:'🌵',gm:0.5,sd:12,note:'Crescimento reduzido, drena solo'},
+];
+var TIMES=[
+  {n:'Amanhecer',e:'🌄',note:'Loja abre logo'},
+  {n:'Manhã',    e:'🌅',note:'Melhor hora para plantar'},
+  {n:'Tarde',    e:'☀️',note:'Loja e mercado abertos'},
+  {n:'Anoitecer',e:'🌇',note:'Mercado ainda aberto'},
+  {n:'Noite',    e:'🌙',note:'Animais produzem, loja fechada'},
+  {n:'Madrugada',e:'⭐',note:'Tudo fechado — durma!'},
+];
+var SHOP_T=[0,1,2], MKT_T=[2,3,4];
+
+var BOSSES=[
+  {id:'gafanhotos',n:'Rei dos Gafanhotos',e:'🦗',hp:100,maxHp:100,atk:16,
+   intro:'Nuvem de gafanhotos avança! As lavouras estão em perigo!',
+   actions:[
+     {l:'🧪 Defensivo', dmg:[22,34],cost:0,  d:'Agrotóxico'},
+     {l:'🌿 Biológico',  dmg:[14,24],cost:0,  d:'Controle natural'},
+     {l:'🤖 Drone',      dmg:[38,52],cost:300,d:'Req. Drone',drone:true},
+     {l:'🛡️ Defender',   dmg:[4,9],  cost:0,  d:'Reduz dano',def:true},
+   ],
+   reward:{money:800,xp:60,seeds:{soja:5},msg:'Sementes raras de soja! +R$800 +60XP'},
+  },
+  {id:'seca',n:'Seca Extrema',e:'🔥',hp:150,maxHp:150,atk:20,
+   intro:'Seca histórica no Paraná! Plantações secando rapidamente!',
+   actions:[
+     {l:'💧 Irrigação',  dmg:[28,40],cost:0,  d:'Sistema hídrico'},
+     {l:'🌧️ Chuva Art.', dmg:[18,32],cost:400,d:'Nuvem artificial'},
+     {l:'🌿 Resistência',dmg:[8,18], cost:0,  d:'Culturas resistentes',def:true},
+     {l:'🏗️ Açude',      dmg:[42,58],cost:500,d:'Reservatório'},
+   ],
+   reward:{money:1500,xp:100,machine:'irrigacao',msg:'Irrigação desbloqueada! +R$1.500 +100XP'},
+  },
+  {id:'epidemia',n:'Epidemia Animal',e:'🦠',hp:80,maxHp:80,atk:14,
+   intro:'Doença grave se espalha pelo rebanho! Animais em risco!',
+   actions:[
+     {l:'💉 Vacinar',    dmg:[30,42],cost:250,d:'Vacinação em massa'},
+     {l:'🏥 Quarentena', dmg:[18,28],cost:0,  d:'Isola animais doentes'},
+     {l:'🌿 Homeopático',dmg:[10,20],cost:0,  d:'Tratamento natural'},
+     {l:'📞 Vet. Ana',   dmg:[40,55],cost:0,  d:'Ana ajuda! (req. conhecer Ana)',npc:'ana'},
+   ],
+   reward:{money:1000,xp:80,item:'vacina',qty:3,msg:'Epidemia controlada! +R$1.000 +80XP +3 Vacinas'},
+  },
+];
+var EVENTS_GOOD=[
+  {e:'🌧️',t:'Chuva Abundante!',   txt:'Chuvas generosas no Paraná. Crescimento acelerado!',        fx:'growth',v:1.3},
+  {e:'🌤️',t:'Clima Perfeito!',    txt:'Temperatura ideal. Produção acima do esperado!',             fx:'growth',v:1.2},
+  {e:'🏪',t:'Expoagro Londrina!', txt:'Maior feira do Sul! Produtos com 30% de bônus hoje.',        fx:'price', v:1.3},
+  {e:'🏦',t:'Crédito Rural!',     txt:'Governo abre linha de crédito especial.',                    fx:'money', v:600},
+  {e:'🚢',t:'Exportação!',        txt:'Empresa internacional compra com 50% de ágio!',              fx:'price', v:1.5},
+  {e:'⚡',t:'Dia de Energia!',    txt:'Você acordou revigorado! +3 stamina extra.',                 fx:'sta',   v:3},
+];
+var EVENTS_BAD=[
+  {e:'☀️',t:'Seca Moderada',    txt:'Calor reduziu a produção. Como agir?',
+   ch:[{l:'💧 Irrigar (-R$300)',c:300,gm:0.88},{l:'😔 Aceitar perda',c:0,gm:0.55}]},
+  {e:'🪲',t:'Praga na Lavoura!',txt:'Lagartas invadiram o campo paranaense!',
+   ch:[{l:'🛡️ Pesticida (-R$400)',c:400,gm:0.90},{l:'🌿 Orgânico (-R$200)',c:200,gm:0.75}]},
+  {e:'❄️',t:'Geada!',           txt:'Frente fria danificou culturas sensíveis.',
+   ch:[{l:'🔥 Proteção (-R$350)',c:350,gm:0.85},{l:'❄️ Aceitar dano',c:0,gm:0.45}]},
+  {e:'🌪️',t:'Vendaval',         txt:'Ventos fortes danificaram a lavoura.',
+   ch:[{l:'🛡️ Contenção (-R$250)',c:250,gm:0.82},{l:'😔 Aceitar',c:0,gm:0.60}]},
+  {e:'🦠',t:'Alerta de Doença!',txt:'Suspeita de doença no rebanho. Agir rápido!',
+   ch:[{l:'💉 Vacinar (-R$250)',c:250,gm:1.0,useVac:true},{l:'⚠️ Aguardar',c:0,gm:1.0,sickRisk:true}]},
+  {e:'💸',t:'Imposto Rural',    txt:'O município cobrou imposto sobre a produção.',
+   ch:[{l:'💳 Pagar (-R$400)',c:400,gm:1.0},{l:'⏳ Contestar (-3 stamina)',c:0,gm:1.0,staDrain:3}]},
+  {e:'🌩️',t:'Tempestade!',      txt:'Raios danificaram equipamentos e o solo.',
+   ch:[{l:'🔧 Reparar (-R$300)',c:300,soil:-10},{l:'😔 Aceitar',c:0,soil:-20}]},
+];
+var MISSIONS=[
+  {id:'m1', n:'Primeiro Plantio',  e:'🌱',d:'Plante 10 sementes',         t:'planted', g:10,   xp:25, r:150, unlock:5},
+  {id:'m2', n:'Primeira Colheita', e:'🌾',d:'Colha 10 unidades',           t:'harvest', g:10,   xp:30, r:200},
+  {id:'m3', n:'Galinha Comprada',  e:'🐔',d:'Compre uma galinha',          t:'animal',  g:'galinha',xp:20,r:150,unlock:6},
+  {id:'m4', n:'Construir Celeiro', e:'🏚️',d:'Compre o Silo',               t:'machine', g:'silo',xp:40,r:400,unlock:7},
+  {id:'m5', n:'Adquirir Trator',   e:'🚜',d:'Compre o Trator Básico',     t:'machine', g:'trator_b',xp:50,r:500},
+  {id:'m6', n:'Produzir Leite',    e:'🥛',d:'Produza 5 unidades de leite', t:'item',    g:{pid:'leite',qty:5},xp:35,r:300},
+  {id:'m7', n:'Abastecer a Cidade',e:'🏙️',d:'Venda R$ 2.000 no mercado',  t:'sold',    g:2000, xp:60, r:600},
+  {id:'m8', n:'Derrotar Gafanhotos',e:'⚔️',d:'Derrote o Rei dos Gafanhotos',t:'boss',  g:'gafanhotos',xp:100,r:1000},
+  {id:'m9', n:'Exportar Produtos', e:'🌍',d:'Venda R$ 5.000 no mercado',  t:'sold',    g:5000, xp:120,r:1500},
+  {id:'m10',n:'Agroindústria',     e:'🏭',d:'Chegar ao Nível 5',          t:'level',   g:5,    xp:150,r:2000},
+];
+var ACHIEVEMENTS=[
+  {id:'a1',n:'Primeira Colheita',     e:'🌾',d:'Fez a primeira colheita',     c:function(s){return s.st.harvest>=1;}},
+  {id:'a2',n:'Fazendeiro Rico',       e:'💰',d:'Acumulou R$ 10.000',          c:function(s){return s.money>=10000;}},
+  {id:'a3',n:'Mestre da Agricultura', e:'🌈',d:'Cultivou todas as 5 culturas',c:function(s){return s.cropsPlanted.size>=5;}},
+  {id:'a4',n:'Rei da Pecuária',       e:'🐄',d:'Criou todos os 4 animais',    c:function(s){return s.animals.size>=4;}},
+  {id:'a5',n:'Guardião do Agro',      e:'⚔️',d:'Derrotou os 3 chefes',       c:function(s){return s.bosses.size>=3;}},
+  {id:'a6',n:'Mestre do Trator',      e:'🚜',d:'Comprou um trator',           c:function(s){return s.machines.has('trator_b')||s.machines.has('trator_a');}},
+  {id:'a7',n:'Sem Desperdício',       e:'♻️',d:'Vendeu com armazém lotado',   c:function(s){return s.st.soldFull>=1;}},
+  {id:'a8',n:'Sobrevivente',          e:'💪',d:'Sobreviveu a 3 eventos ruins',c:function(s){return s.st.badEvs>=3;}},
+  {id:'a9',n:'Amigo dos Animais',     e:'🤝',d:'Curou a Epidemia Animal',     c:function(s){return s.bosses.has('epidemia');}},
+  {id:'a10',n:'Mestre do Agro Forte', e:'🌟',d:'Completou todas as missões',  c:function(s){return s.missions.completed.size>=10;}},
+];
+
+// ═══════════════════════════════════════════
+//  ESTADO
+// ═══════════════════════════════════════════
+var S = {};
+function newS(){
+  return {
+    money:500,xp:0,level:1,day:1,tIdx:1,wIdx:0,
+    stamina:MAX_STA,
+    cells:Array(MAX_CELLS).fill(null),
+    cellsUnlocked:4,
+    soil:Array(MAX_CELLS).fill(100),
+    seeds:{milho:3,soja:2},
+    inv:{},inputs:{},
+    machines:new Set(),animals:new Set(),
+    animalTimers:{},animalSick:new Set(),
+    pesticDays:0,
+    eventGm:1,eventPm:1,
+    activeBoss:null,battleLog:[],
+    action:'plant',
+    knownNpcs:new Set(['agrinho','joao']),
+    pendingEv:null,
+    missions:{progress:{},completed:new Set()},
+    achievements:new Set(),
+    bosses:new Set(),
+    cropsPlanted:new Set(),
+    st:{harvest:0,planted:0,sold:0,soldFull:0,badEvs:0,itemsProduced:{}},
+    mktPrices:{},
+  };
+}
+
+// ═══════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════
+function $(id){return document.getElementById(id);}
+var _tt;
+function toast(msg,bad,good){
+  var t=$('toast');t.textContent=msg;
+  t.className='on'+(bad?' bad':good?' good':'');
+  clearTimeout(_tt);_tt=setTimeout(function(){t.classList.remove('on');},2800);
+}
+function fmt(n){return 'R$ '+Math.round(n).toLocaleString('pt-BR');}
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function show(id){
+  document.querySelectorAll('.sc').forEach(function(s){s.classList.remove('on');});
+  $(id).classList.add('on');
+  document.querySelectorAll('.nb').forEach(function(b){b.classList.remove('an');});
+  var nm={'s-map':'nb-map','s-farm':'nb-farm','s-shop':'nb-shop',
+          's-market':'nb-mkt','s-missions':'nb-miss','s-npc':'nb-npc'};
+  if(nm[id] && $(nm[id])) $(nm[id]).classList.add('an');
+}
+function maxSto(){return S.machines.has('silo')?80:50;}
+function stoUsed(){
+  var n=0;
+  Object.entries(S.inv).forEach(function(kv){
+    var k=kv[0],v=kv[1];
+    var c=CROPS.find(function(x){return x.id===k;});
+    var a=ANIMALS.find(function(x){return x.pid===k;});
+    n+=v*(c?c.sz:a?a.sz:1);
+  });
+  return n;
+}
+function canSto(extra){return stoUsed()+extra<=maxSto();}
+function avgSoil(){
+  var cells=S.soil.slice(0,S.cellsUnlocked);
+  return Math.round(cells.reduce(function(a,b){return a+b;},0)/cells.length);
+}
+function updateHUD(){
+  var t=TIMES[S.tIdx];
+  $('ht').textContent=t.e+' '+t.n;
+  $('ht').className=S.stamina<=2?'hb red':'hb';
+  $('hm').textContent='💰 '+fmt(S.money);
+  $('hm').className=S.money<100?'hs warn':'hs';
+  $('hlv').textContent='⭐ Nv.'+S.level;
+  $('hd').textContent='📅 Dia '+S.day;
+  var stP=S.stamina/MAX_STA*100;
+  $('hsl').textContent=S.stamina+'/'+MAX_STA;
+  $('hsb').style.width=stP+'%';
+  $('hsb').style.background=stP<=20?'var(--red)':stP<=40?'var(--orange)':'';
+  var xpN=S.level*100;
+  $('hxl').textContent=S.xp+'/'+xpN;
+  $('hxb').style.width=Math.min(100,S.xp/xpN*100)+'%';
+  var su=stoUsed(),sm=maxSto();
+  $('hstl').textContent=su+'/'+sm;
+  $('hstb').style.width=(su/sm*100)+'%';
+}
+
+// ═══════════════════════════════════════════
+//  XP / NÍVEL
+// ═══════════════════════════════════════════
+function addXP(n){
+  S.xp+=n;
+  var need=S.level*100;
+  if(S.xp>=need){
+    S.xp-=need;S.level++;
+    toast('🌟 Nível '+S.level+'! Novas áreas desbloqueadas!',false,true);
+    if(S.level>=2) $('nb-npcs').classList.remove('lknav');
+    checkAll();
+  }
+  updateHUD();checkAll();
+}
+
+// ═══════════════════════════════════════════
+//  MISSÕES & CONQUISTAS
+// ═══════════════════════════════════════════
+function checkAll(){checkMissions();checkAchs();}
+function checkMissions(){
+  MISSIONS.forEach(function(m){
+    if(S.missions.completed.has(m.id))return;
+    var prog=0;
+    // FIX #6: calcular goal corretamente para missoes do tipo 'item'
+    var goal;
+    if(m.t==='item'){
+      goal=m.g.qty;
+      prog=S.st.itemsProduced[m.g.pid]||0;
+    } else {
+      goal=typeof m.g==='number'?m.g:1;
+      if(m.t==='planted')  prog=S.st.planted;
+      else if(m.t==='harvest') prog=S.st.harvest;
+      else if(m.t==='animal')  prog=S.animals.has(m.g)?1:0;
+      else if(m.t==='machine') prog=S.machines.has(m.g)?1:0;
+      else if(m.t==='sold')    prog=S.st.sold;
+      else if(m.t==='boss')    prog=S.bosses.has(m.g)?1:0;
+      else if(m.t==='level')   prog=S.level;
+    }
+    S.missions.progress[m.id]=Math.min(prog,goal);
+    if(prog>=goal){
+      S.missions.completed.add(m.id);
+      S.money+=m.r;addXP(m.xp);
+      if(m.unlock&&S.cellsUnlocked<MAX_CELLS){
+        S.cellsUnlocked=Math.min(MAX_CELLS,m.unlock);
+        toast('📜 Missão "'+m.n+'" completa! +'+fmt(m.r)+' +'+m.xp+'XP 🔓 Nova(s) parcela(s)!',false,true);
+      } else {
+        toast('📜 Missão "'+m.n+'" completa! +'+fmt(m.r)+' +'+m.xp+'XP',false,true);
+      }
+    }
+  });
+}
+function checkAchs(){
+  ACHIEVEMENTS.forEach(function(a){
+    if(!S.achievements.has(a.id)&&a.c(S)){
+      S.achievements.add(a.id);
+      toast('🏆 Conquista: '+a.n+'!',false,true);
+    }
+  });
+}
+
+// ═══════════════════════════════════════════
+//  PREÇOS — FIX #5: peixe incluído no rollPrices
+// ═══════════════════════════════════════════
+function rollPrices(){
+  S.mktPrices={};
+  CROPS.forEach(function(c){S.mktPrices[c.id]=Math.round(c.sell*(0.78+Math.random()*0.44));});
+  ANIMALS.forEach(function(a){S.mktPrices[a.pid]=Math.round(a.pp*(0.82+Math.random()*0.36));});
+  S.mktPrices['peixe']=Math.round(80*(0.80+Math.random()*0.40));
+}
+
+// ═══════════════════════════════════════════
+//  TEMPO
+// ═══════════════════════════════════════════
+function advTime(n){
+  n=n||1;
+  for(var i=0;i<n;i++){
+    S.tIdx=(S.tIdx+1)%6;
+    if(S.tIdx===0) newDay();
+  }
+  updateHUD();
+}
+function newDay(){
+  S.day++;
+  if(S.day>TOTAL_DAYS){setTimeout(function(){G.endGame();},200);return;}
+  S.wIdx=Math.floor(Math.random()*4);
+  S.stamina=MAX_STA;
+  if(S.machines.has('solar')&&S.wIdx===0) S.stamina=Math.min(MAX_STA,S.stamina+2);
+  rollPrices();
+  S.eventGm=1;S.eventPm=1;
+  if(S.pesticDays>0) S.pesticDays--;
+  var w=WEATHER[S.wIdx];
+  for(var i=0;i<MAX_CELLS;i++){
+    var drain=w.sd;
+    if(S.machines.has('irrigacao')&&S.wIdx===3) drain=Math.floor(drain*0.4);
+    S.soil[i]=Math.max(0,Math.min(100,S.soil[i]-drain+SOIL_REGEN));
+  }
+  S.cells=S.cells.map(function(c,i){
+    if(!c||c.ready)return c;
+    var sm=S.soil[i]/100,wm=w.gm;
+    var tb=S.machines.has('trator_a')?0.5:S.machines.has('trator_b')?0.2:0;
+    var adv=wm*(0.75+sm*0.25)+tb;
+    var nt=Math.max(0,c.t-adv);
+    return Object.assign({},c,{t:nt,ready:nt<=0});
+  });
+  Object.keys(S.animalTimers).forEach(function(aid){
+    if(S.animalSick.has(aid))return;
+    S.animalTimers[aid]--;
+    if(S.animalTimers[aid]<=0){
+      var a=ANIMALS.find(function(x){return x.id===aid;});
+      if(canSto(a.sz)){
+        S.inv[a.pid]=(S.inv[a.pid]||0)+1;
+        S.st.itemsProduced[a.pid]=(S.st.itemsProduced[a.pid]||0)+1;
+        toast(a.e+' '+a.n+' produziu '+a.prod+' '+a.pn+'!',false,true);
+      } else {
+        toast('⚠️ Armazém cheio — '+a.pn+' de '+a.n+' perdida!',true);
+      }
+      S.animalTimers[aid]=a.ev;
+    }
+  });
+  if(S.day%3===0) setTimeout(function(){triggerEvent();},300);
+  if(S.day===7  && !S.bosses.has('gafanhotos')) setTimeout(function(){triggerBoss('gafanhotos');},300);
+  if(S.day===16 && !S.bosses.has('seca'))       setTimeout(function(){triggerBoss('seca');},300);
+  if(S.day===23 && !S.bosses.has('epidemia'))   setTimeout(function(){triggerBoss('epidemia');},300);
+}
+
+// ═══════════════════════════════════════════
+//  EVENTOS
+// ═══════════════════════════════════════════
+function triggerEvent(){
+  var good=Math.random()>0.45;
+  var pool=good?EVENTS_GOOD:EVENTS_BAD;
+  var ev=pool[rnd(0,pool.length-1)];
+  S.pendingEv=ev;
+  if(!good) S.st.badEvs++;
+  $('ev-title').textContent=good?'✨ Boa Notícia!':'⚠️ Evento Adverso';
+  $('ev-sub').textContent=good?'Um evento positivo!':'Tome uma decisão rápida!';
+  if(good){
+    if(ev.fx==='growth') S.eventGm=ev.v;
+    if(ev.fx==='price')  S.eventPm=ev.v;
+    if(ev.fx==='money'){S.money+=ev.v;updateHUD();}
+    if(ev.fx==='sta')    S.stamina=Math.min(MAX_STA,S.stamina+ev.v);
+    $('ev-body').innerHTML=
+      '<div class="evcard">'+
+        '<div class="evi">'+ev.e+'</div>'+
+        '<div class="evt">'+ev.t+'</div>'+
+        '<div class="evtxt">'+ev.txt+'</div>'+
+        (ev.fx==='money'?'<div style="margin-top:8px;color:var(--mint);font-weight:800">+'+fmt(ev.v)+' recebido!</div>':'')+
+        (ev.fx==='growth'?'<div style="margin-top:8px;color:var(--mint);font-weight:800">Crescimento ×'+ev.v+' até amanhã!</div>':'')+
+        (ev.fx==='price'?'<div style="margin-top:8px;color:var(--mint);font-weight:800">Preços ×'+ev.v+' no mercado hoje!</div>':'')+
+        (ev.fx==='sta'?'<div style="margin-top:8px;color:var(--mint);font-weight:800">+'+ev.v+' stamina!</div>':'')+
+      '</div>'+
+      '<button class="btnf" id="btn-ev-cont">🗺️ Continuar →</button>';
+    $('btn-ev-cont').addEventListener('click',function(){G.goMap();});
+  } else {
+    var chBtns=ev.ch.map(function(ch,i){
+      return '<button class="btng ev-ch-btn" data-idx="'+i+'">'+ch.l+
+        '<div style="font-size:9px;color:'+(ch.c>0?'var(--red)':'var(--mint)')+';margin-top:2px">'+
+        (ch.c>0?'-'+fmt(ch.c)+' • ':'')+
+        (ch.gm!=null?'Produção: '+Math.round(ch.gm*100)+'%':'')+
+        (ch.soil!=null?'Solo: '+ch.soil+'%':'')+
+        (ch.staDrain?'-'+ch.staDrain+' stamina':'')+
+        '</div></button>';
+    }).join('');
+    $('ev-body').innerHTML=
+      '<div class="evcard bad">'+
+        '<div class="evi">'+ev.e+'</div>'+
+        '<div class="evt">'+ev.t+'</div>'+
+        '<div class="evtxt">'+ev.txt+'</div>'+
+      '</div>'+
+      '<div style="font-size:10px;color:var(--mint);margin-bottom:6px">Sua decisão:</div>'+
+      chBtns;
+    document.querySelectorAll('.ev-ch-btn').forEach(function(btn){
+      btn.addEventListener('click',function(){G.applyEv(parseInt(btn.getAttribute('data-idx')));});
+    });
+  }
+  show('s-event');
+}
+function triggerBoss(bid){
+  var bossData=BOSSES.find(function(b){return b.id===bid;});
+  S.activeBoss=Object.assign({},bossData,{hp:bossData.maxHp});
+  S.battleLog=[];
+  renderBoss();show('s-boss');
+}
+function renderBoss(){
+  var b=S.activeBoss;if(!b)return;
+  $('boss-title').textContent='⚔️ '+b.e+' '+b.n;
+  var hpP=Math.max(0,b.hp/b.maxHp*100);
+  var log=S.battleLog.slice(-5).map(function(l){return '<div class="ll '+l.tp+'">'+l.tx+'</div>';}).join('');
+  var acts=b.actions.map(function(a,i){
+    var noDro=a.drone&&!S.machines.has('drone');
+    var noNpc=a.npc&&!S.knownNpcs.has(a.npc);
+    var noSta=S.stamina<1;
+    var noMon=S.money<(a.cost||0);
+    var dis=noDro||noNpc||noSta||noMon;
+    return '<button class="btng boss-act-btn" data-idx="'+i+'" '+(dis?'disabled':'')+' style="margin-bottom:0;font-size:11px">'+
+      a.l+'<br><span style="font-size:9px;color:var(--mint)">'+a.d+
+      (a.cost?' • -'+fmt(a.cost):'')+
+      (noDro?' • 🤖req':'')+
+      (noNpc?' • req '+a.npc:'')+
+      (noSta?' • ⚡0':'')+
+      (noMon?' • 💸':'')+
+      '</span></button>';
+  }).join('');
+  $('boss-body').innerHTML=
+    '<div class="bosscard">'+
+      '<span class="bossi">'+b.e+'</span>'+
+      '<div class="bossn">'+b.n+'</div>'+
+      '<div class="bosst">'+b.intro+'</div>'+
+      '<div class="bosshpw">'+
+        '<div class="bosshpl"><span>❤️ Vida</span><span>'+b.hp+'/'+b.maxHp+'</span></div>'+
+        '<div class="bosshpb"><div class="bosshpf" style="width:'+hpP+'%"></div></div>'+
+      '</div>'+
+    '</div>'+
+    '<div style="font-size:10px;color:var(--mint);margin-bottom:6px">⚡ Stamina: '+S.stamina+'/'+MAX_STA+' — cada ataque gasta 1</div>'+
+    '<div class="battacts">'+acts+'</div>'+
+    '<div class="battlelog">'+(log||'<span style="opacity:.45">Batalha iniciando...</span>')+'</div>';
+  document.querySelectorAll('.boss-act-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){G.bossAct(parseInt(btn.getAttribute('data-idx')));});
+  });
+}
+
+// ═══════════════════════════════════════════
+//  GAME
+// ═══════════════════════════════════════════
+var G={
+  start:function(){
+    S=newS();rollPrices();
+    $('hud').classList.add('on');$('nav').classList.add('on');
+    updateHUD();this.goMap();
+  },
+  restart:function(){
+    $('hud').classList.remove('on');$('nav').classList.remove('on');
+    show('s-start');
+  },
+  // FIX #9: sleep corrigido — parte do período atual sem criar dia extra
+  sleep:function(){
+    var periods=S.tIdx===0?6:(6-S.tIdx);
+    if(periods===0) periods=6;
+    advTime(periods);
+    toast('🌙 Dormiu bem! Stamina totalmente restaurada.',false,true);
+    this.goMap();
+  },
+  goMap:function(){
+    var t=TIMES[S.tIdx],w=WEATHER[S.wIdx];
+    $('map-sub').textContent='Dia '+S.day+'/'+TOTAL_DAYS+' • '+t.note;
+    $('mt-name').textContent=t.e+' '+t.n;
+    $('mt-info').textContent='Dia '+S.day+' • '+t.note;
+    $('mt-wi').textContent=w.e;
+    $('mt-wn').textContent=w.n;
+    var als=[];
+    if(S.stamina===0) als.push({crit:true,i:'⚡',t:'Stamina zerada! Durma para recuperar.'});
+    else if(S.stamina<=2) als.push({crit:false,i:'⚡',t:'Stamina baixa: '+S.stamina+'/'+MAX_STA+'. Considere dormir.'});
+    var su=stoUsed(),sm=maxSto();
+    if(su>=sm) als.push({crit:true,i:'📦',t:'Armazém LOTADO! ('+su+'/'+sm+') Venda antes de colher.'});
+    else if(su>=sm*0.85) als.push({crit:false,i:'📦',t:'Armazém quase cheio: '+su+'/'+sm+'. Venda logo!'});
+    if(avgSoil()<30) als.push({crit:avgSoil()<15,i:'🌱',t:'Solo degradado: '+avgSoil()+'%. Use fertilizante!'});
+    if(S.animalSick.size>0) als.push({crit:true,i:'🦠',t:S.animalSick.size+' animal(is) doente(s)! Use vacina urgente!'});
+    $('map-alerts').innerHTML=als.map(function(a){
+      return '<div class="al '+(a.crit?'crit':'')+'"><span>'+a.i+'</span><span>'+a.t+'</span></div>';
+    }).join('');
+    $('map-grid').innerHTML=AREAS.map(function(a){
+      var lk=S.level<a.lvl;
+      return '<div class="marea '+(lk?'lk':'')+'" id="area-'+a.id+'">'+
+        '<div class="mai">'+a.e+'</div>'+
+        '<div class="man">'+a.n+'</div>'+
+        '<div class="mad">'+a.d+'</div>'+
+        (lk?'<div class="malk">🔒 Nível '+a.lvl+'</div>':'')+
+      '</div>';
+    }).join('');
+    AREAS.forEach(function(a){
+      var el=$('area-'+a.id);
+      if(el&&S.level>=a.lvl){
+        el.addEventListener('click',function(){G[a.fn]();});
+      }
+    });
+    show('s-map');
+  },
+  goForest:function(){
+    if(S.stamina<1){toast('⚡ Sem stamina!',true);return;}
+    S.stamina--;var gain=rnd(80,280);S.money+=gain;addXP(15);
+    toast('🌲 Floresta: madeira e frutas! +'+fmt(gain)+' +15XP',false,true);
+    advTime(1);updateHUD();this.goMap();
+  },
+  goRio:function(){
+    if(S.stamina<1){toast('⚡ Sem stamina!',true);return;}
+    S.stamina--;var fish=rnd(1,3);
+    S.inv['peixe']=(S.inv['peixe']||0)+fish;
+    addXP(10);
+    toast('🌊 Rio: pescou '+fish+' peixe(s)!',false,true);
+    advTime(1);updateHUD();this.goMap();
+  },
+  goAgro:function(){this.goMissions();toast('🏭 Centro Agroindustrial!',false,true);},
+  goFarm:function(){S.action='plant';this.renderFarm();show('s-farm');},
+  renderFarm:function(){
+    var w=WEATHER[S.wIdx];
+    $('farm-wx').textContent=w.e+' '+w.n+' — '+w.note;
+    $('farm-info').innerHTML='🚜 '+(S.machines.has('trator_b')||S.machines.has('trator_a')?'Trator ativo':'Sem trator')+'<br>⚡ '+S.stamina+'/'+MAX_STA+'<br>📦 '+stoUsed()+'/'+maxSto();
+    var als=[];
+    if(S.stamina===0) als.push({crit:true,msg:'⚡ Stamina zerada! Durma para recuperar.'});
+    if(stoUsed()>=maxSto()) als.push({crit:true,msg:'📦 Armazém lotado! Venda antes de colher.'});
+    $('farm-alerts').innerHTML=als.map(function(a){return '<div class="warnbox '+(a.crit?'crit':'')+'">⚠️ '+a.msg+'</div>';}).join('');
+    var acts=[
+      {id:'plant',     e:'🌱',l:'Plantar',   note:'1⚡'},
+      {id:'harvest',   e:'🌾',l:'Colher',    note:S.machines.has('colhei')?'0⚡':'1⚡'},
+      {id:'water',     e:'💧',l:'Regar',     note:'1⚡'},
+      {id:'fertilize', e:'🧪',l:'Adubar',    note:(S.inputs['ferti']||0)+'un'},
+      {id:'harvest_all',e:'⚡',l:'Colher Tudo',note:'auto'},
+    ];
+    $('act-row').innerHTML=acts.map(function(a){
+      var dis=S.stamina<1&&a.id!=='fertilize'&&a.id!=='harvest_all';
+      return '<div class="actb '+(S.action===a.id?'sel':'')+(dis?' disa':'')+'" id="act-'+a.id+'">'+
+        '<span class="abi">'+a.e+'</span>'+a.l+'<br>'+
+        '<span style="font-size:8px;color:var(--mint)">'+a.note+'</span>'+
+      '</div>';
+    }).join('');
+    acts.forEach(function(a){
+      var el=$('act-'+a.id);
+      if(el){
+        el.addEventListener('click',function(){
+          if(a.id==='harvest_all') G.harvestAll();
+          else{S.action=a.id;G.renderFarm();}
+        });
+      }
+    });
+    $('field-grid').innerHTML=S.cells.map(function(c,i){
+      if(i>=S.cellsUnlocked) return '<div class="cell lkcell" id="cell-'+i+'">🔒<span class="cti">bloq</span></div>';
+      var soil=S.soil[i];
+      var crop=c?CROPS.find(function(x){return x.id===c.cropId;}):null;
+      var em=c?(c.ready?(crop?crop.e:'?')+'✨':(crop?crop.e:'?')):(soil<20?'🟤':'🟫');
+      var si=soil>=70?'':soil>=40?'<span class="csi">🟡</span>':'<span class="csi">🔴</span>';
+      return '<div class="cell '+(c?'planted':'')+' '+(c&&c.ready?'ready':'')+' '+(!c&&soil<15?'depleted':'')+'" id="cell-'+i+'" title="Solo: '+soil+'%">'+
+        em+si+(c&&!c.ready?'<span class="cti">'+Math.ceil(c.t)+'d</span>':'')+
+      '</div>';
+    }).join('');
+    S.cells.forEach(function(c,i){
+      var el=$('cell-'+i);
+      if(el&&i<S.cellsUnlocked){
+        el.addEventListener('click',function(){G.cellClick(i);});
+      }
+    });
+    var sk=Object.entries(S.seeds).filter(function(kv){return kv[1]>0;});
+    $('seed-inv').textContent=sk.length?sk.map(function(kv){var c=CROPS.find(function(x){return x.id===kv[0];});return c?c.e+c.n+':'+kv[1]+'×':kv[0];}).join(' • '):'Sem sementes';
+    var ik=Object.entries(S.inputs).filter(function(kv){return kv[1]>0;});
+    $('input-inv').textContent=ik.length?ik.map(function(kv){var inp=INPUTS.find(function(x){return x.id===kv[0];});return inp?inp.e+inp.n+':'+kv[1]+'×':kv[0];}).join(' • '):'Sem insumos';
+  },
+  harvestAll:function(){
+    var total=0;
+    S.cells.forEach(function(c,i){
+      if(!c||!c.ready)return;
+      var crop=CROPS.find(function(x){return x.id===c.cropId;});
+      var qty=rnd(2,4)+(S.machines.has('trator_b')||S.machines.has('trator_a')?1:0);
+      var amount=Math.round(qty*S.eventGm);
+      if(!canSto(crop.sz*amount))return;
+      var hSta=S.machines.has('colhei')?0:1;
+      if(S.stamina<hSta)return;
+      S.stamina-=hSta;
+      S.inv[c.cropId]=(S.inv[c.cropId]||0)+amount;
+      S.cells[i]=null;
+      S.soil[i]=Math.max(0,S.soil[i]-SOIL_DRAIN);
+      S.st.harvest+=amount;total+=amount;
+    });
+    if(total>0){addXP(total*2);checkAll();toast('🌾 Colheu tudo! '+total+' unidades',false,true);}
+    else toast('Nenhuma cultura pronta.',false);
+    advTime(1);updateHUD();this.renderFarm();
+  },
+  cellClick:function(i){
+    if(i>=S.cellsUnlocked){toast('🔒 Parcela bloqueada! Complete missões.',true);return;}
+    var c=S.cells[i],act=S.action;
+    if(act==='fertilize'){
+      if(S.soil[i]>=95){toast('🌱 Solo perfeito!',true);return;}
+      if(!(S.inputs['ferti']>0)){toast('🧪 Sem fertilizante! Compre na loja.',true);return;}
+      S.inputs['ferti']--;
+      S.soil[i]=Math.min(100,S.soil[i]+35);
+      toast('🧪 Adubado! Solo: '+S.soil[i]+'%',false,true);
+      this.renderFarm();return;
+    }
+    if(act==='water'){
+      if(!c||c.ready){toast('💧 Nada para regar.',true);return;}
+      if(S.stamina<1){toast('⚡ Sem stamina!',true);return;}
+      S.stamina--;
+      S.cells[i]=Object.assign({},c,{t:Math.max(0,c.t-0.6)});
+      if(S.cells[i].t<=0) S.cells[i].ready=true;
+      toast('💧 Regado!',false,true);
+      this.renderFarm();return;
+    }
+    if(act==='harvest'){
+      if(!c||!c.ready){toast('⚠️ Nada para colher aqui.',true);return;}
+      var crop=CROPS.find(function(x){return x.id===c.cropId;});
+      var qty=rnd(2,4)+(S.machines.has('trator_b')||S.machines.has('trator_a')?1:0);
+      var amount=Math.round(qty*S.eventGm);
+      if(!canSto(crop.sz*amount)){toast('📦 Armazém cheio! ('+stoUsed()+'/'+maxSto()+') Venda primeiro!',true);return;}
+      var hSta=S.machines.has('colhei')?0:1;
+      if(S.stamina<hSta){toast('⚡ Sem stamina para colher!',true);return;}
+      S.stamina-=hSta;
+      S.inv[c.cropId]=(S.inv[c.cropId]||0)+amount;
+      S.cells[i]=null;
+      S.soil[i]=Math.max(0,S.soil[i]-SOIL_DRAIN);
+      S.st.harvest+=amount;
+      addXP(crop.xp);checkAll();
+      if(stoUsed()>=maxSto()*0.95) S.st.soldFull++;
+      toast(crop.e+' '+amount+'× '+crop.n+' colhido! Solo:'+S.soil[i]+'%',false,true);
+      advTime(1);updateHUD();this.renderFarm();return;
+    }
+    if(c){toast(c.ready?'🌾 Use "Colher"!':'🌱 Já plantado.',true);return;}
+    if(S.soil[i]<8){toast('⚠️ Solo esgotado! Adubar antes de plantar.',true);return;}
+    this.openPicker(i);
+  },
+  openPicker:function(ci){
+    var avail=CROPS.filter(function(c){return(S.seeds[c.id]||0)>0&&(!c.lvl||S.level>=c.lvl);});
+    if(!avail.length){toast('🌱 Sem sementes! Compre na loja.',true);return;}
+    $('act-row').innerHTML=
+      '<div style="grid-column:1/-1;font-size:9px;color:var(--mint);margin-bottom:3px">⚡'+S.stamina+'/'+MAX_STA+' — escolha a semente:</div>'+
+      avail.map(function(c){
+        var ns=S.stamina<c.sta;
+        return '<div class="actb '+(ns?'disa':'')+'" id="pick-'+c.id+'">'+
+          '<span class="abi">'+c.e+'</span>'+c.n+'('+S.seeds[c.id]+'×)<br>'+
+          '<span style="font-size:8px;color:var(--mint)">'+c.sta+'⚡</span>'+
+        '</div>';
+      }).join('')+
+      '<div class="actb" id="pick-cancel"><span class="abi">❌</span>Cancelar</div>';
+    avail.forEach(function(c){
+      var el=$('pick-'+c.id);
+      if(el&&S.stamina>=c.sta){
+        el.addEventListener('click',function(){G.plant(ci,c.id);});
+      }
+    });
+    var cancel=$('pick-cancel');
+    if(cancel) cancel.addEventListener('click',function(){G.renderFarm();});
+  },
+  plant:function(ci,cid){
+    var crop=CROPS.find(function(x){return x.id===cid;});
+    if(!(S.seeds[cid]>0)){toast('Sem sementes!',true);return;}
+    if(S.stamina<crop.sta){toast('⚡ Precisa de '+crop.sta+' stamina!',true);return;}
+    if(S.soil[ci]<8){toast('🌱 Solo muito fraco! Adubar primeiro.',true);return;}
+    S.seeds[cid]--;S.stamina-=crop.sta;
+    S.cells[ci]={cropId:cid,t:crop.grow,ready:false};
+    S.cropsPlanted.add(cid);S.st.planted++;
+    addXP(5);checkAll();
+    toast('🌱 '+crop.n+' plantado! '+crop.grow+' dias • '+crop.sta+'⚡',false,true);
+    advTime(1);this.renderFarm();
+  },
+  goShop:function(){
+    var open=SHOP_T.indexOf(S.tIdx)>=0;
+    $('shop-closed').style.display=open?'none':'block';
+    $('shop-body').style.display=open?'block':'none';
+    if(open) this.renderShop();
+    show('s-shop');
+  },
+  renderShop:function(){
+    $('sh-seeds').innerHTML=CROPS.map(function(c){
+      var lk=c.lvl&&S.level<c.lvl,af=S.money>=c.cost;
+      return '<div class="shitem" style="'+(lk?'opacity:.33':'')+'">'+
+        '<span class="sie">'+c.e+'</span>'+
+        '<div class="sii">'+
+          '<div class="sin">'+c.n+(lk?' 🔒Nv.'+c.lvl:'')+'</div>'+
+          '<div class="sid">'+c.d+' • '+c.grow+'d • '+c.sta+'⚡ • '+c.sz+'un/espaço</div>'+
+          '<div class="sip">'+fmt(c.cost)+'/saco → vende ~'+fmt(c.sell)+'</div>'+
+        '</div>'+
+        '<button class="btnsh seed-buy-btn" data-id="'+c.id+'" '+(lk||!af?'disabled':'')+'>'+(lk?'🔒':af?'Comprar':'💸')+'</button>'+
+      '</div>';
+    }).join('');
+    document.querySelectorAll('.seed-buy-btn').forEach(function(btn){
+      btn.addEventListener('click',function(){G.buySeed(btn.getAttribute('data-id'));});
+    });
+    $('sh-animals').innerHTML=ANIMALS.map(function(a){
+      var owned=S.animals.has(a.id),lk=a.lvl>S.level,sick=S.animalSick.has(a.id),af=S.money>=a.cost;
+      return '<div class="animc '+(owned?'owned':'')+' '+(sick?'sick-a':'')+'">'+
+        '<span class="ae">'+a.e+'</span>'+
+        '<div class="an2">'+a.n+(sick?' 🤒':'')+'</div>'+
+        '<div class="ap">'+a.prod+' '+a.pn+'/'+a.ev+'d</div>'+
+        '<div class="ac2">'+(owned?'✓ Possui':lk?'🔒Nv'+a.lvl:fmt(a.cost))+'</div>'+
+        (owned?
+          '<button class="btnsm btncol anim-col-btn" data-id="'+a.id+'">Coletar('+((S.animalTimers[a.id]||0))+'d)</button>':
+          '<button class="btnsm btnbuy anim-buy-btn" data-id="'+a.id+'" '+(lk||!af?'disabled':'')+'>'+(lk?'🔒':af?'Comprar':'💸')+'</button>'
+        )+
+        (sick?'<button class="btnsm anim-cure-btn" data-id="'+a.id+'" style="background:var(--red);color:#fff;margin-top:3px">💉 Curar(-R$250)</button>':'')+
+      '</div>';
+    }).join('');
+    document.querySelectorAll('.anim-buy-btn').forEach(function(btn){btn.addEventListener('click',function(){G.buyAnimal(btn.getAttribute('data-id'));});});
+    document.querySelectorAll('.anim-col-btn').forEach(function(btn){btn.addEventListener('click',function(){G.collectAnimal(btn.getAttribute('data-id'));});});
+    document.querySelectorAll('.anim-cure-btn').forEach(function(btn){btn.addEventListener('click',function(){G.cureAnimal(btn.getAttribute('data-id'));});});
+    $('sh-inputs').innerHTML=INPUTS.map(function(inp){
+      var has=S.inputs[inp.id]||0,af=S.money>=inp.cost;
+      return '<div class="shitem">'+
+        '<span class="sie">'+inp.e+'</span>'+
+        '<div class="sii">'+
+          '<div class="sin">'+inp.n+' (em mãos:'+has+')</div>'+
+          '<div class="sid">'+inp.d+'</div>'+
+          '<div class="sip">'+fmt(inp.cost)+'/un</div>'+
+        '</div>'+
+        '<button class="btnsh inp-buy-btn" data-id="'+inp.id+'" '+(af?'':'disabled')+'>'+(af?'Comprar':'💸')+'</button>'+
+      '</div>';
+    }).join('');
+    document.querySelectorAll('.inp-buy-btn').forEach(function(btn){btn.addEventListener('click',function(){G.buyInput(btn.getAttribute('data-id'));});});
+    $('sh-machines').innerHTML=MACHINES.map(function(m){
+      var owned=S.machines.has(m.id),lk=m.lvl>S.level,af=S.money>=m.cost;
+      return '<div class="machc '+(owned?'owned':!af||lk?'unaf':'')+'">'+
+        '<div class="mce">'+m.e+'</div>'+
+        '<div class="mcn">'+m.n+'</div>'+
+        '<div class="mcd">'+m.d+'</div>'+
+        (lk?'<div class="mcr">🔒 Nível '+m.lvl+'</div>':'')+
+        (owned?'<div style="font-size:10px;color:#60cc60;font-weight:700;margin-top:3px">✓ Adquirida</div>':
+          '<div class="mcp">'+fmt(m.cost)+'</div>'+
+          '<button class="btnsm btnbuy mach-buy-btn" data-id="'+m.id+'" '+(lk||!af?'disabled':'')+'>'+(lk?'🔒':af?'Comprar':'💸')+'</button>'
+        )+
+      '</div>';
+    }).join('');
+    document.querySelectorAll('.mach-buy-btn').forEach(function(btn){btn.addEventListener('click',function(){G.buyMach(btn.getAttribute('data-id'));});});
+  },
+  buySeed:function(id){var c=CROPS.find(function(x){return x.id===id;});if(S.money<c.cost){toast('💸',true);return;}S.money-=c.cost;S.seeds[id]=(S.seeds[id]||0)+1;updateHUD();toast(c.e+' Semente de '+c.n+'!',false,true);this.renderShop();},
+  buyAnimal:function(id){var a=ANIMALS.find(function(x){return x.id===id;});if(S.money<a.cost){toast('💸',true);return;}S.money-=a.cost;S.animals.add(id);S.animalTimers[id]=a.ev;addXP(a.xp);checkAll();updateHUD();toast(a.e+' '+a.n+' adquirida!',false,true);this.renderShop();},
+  collectAnimal:function(id){
+    var a=ANIMALS.find(function(x){return x.id===id;});
+    if(S.animalSick.has(id)){toast('🤒 Animal doente! Curar primeiro.',true);return;}
+    // FIX #10: timer<=0 significa pronto para coleta manual também
+    if((S.animalTimers[id]||0)>0){toast(a.e+' Ainda não pronto. '+(S.animalTimers[id]||0)+'d restantes.',true);return;}
+    if(!canSto(a.sz)){toast('📦 Armazém cheio!',true);return;}
+    S.inv[a.pid]=(S.inv[a.pid]||0)+1;
+    S.st.itemsProduced[a.pid]=(S.st.itemsProduced[a.pid]||0)+1;
+    S.animalTimers[id]=a.ev;
+    checkAll();toast(a.e+' Coletou '+a.prod+' '+a.pn+'!',false,true);updateHUD();
+    this.renderShop();
+  },
+  cureAnimal:function(id){if(S.money<250){toast('💸',true);return;}S.money-=250;S.animalSick.delete(id);updateHUD();toast('💉 Animal curado!',false,true);this.renderShop();},
+  buyInput:function(id){var inp=INPUTS.find(function(x){return x.id===id;});if(S.money<inp.cost){toast('💸',true);return;}S.money-=inp.cost;S.inputs[id]=(S.inputs[id]||0)+1;updateHUD();toast(inp.e+' '+inp.n+' comprado!',false,true);this.renderShop();},
+  buyMach:function(id){var m=MACHINES.find(function(x){return x.id===id;});if(S.money<m.cost){toast('💸',true);return;}S.money-=m.cost;S.machines.add(id);addXP(50);checkAll();updateHUD();toast(m.e+' '+m.n+' adquirida!',false,true);this.renderShop();},
+  goMarket:function(){
+    var open=MKT_T.indexOf(S.tIdx)>=0;
+    if(!open){$('mkt-body').innerHTML='<div class="warnbox">⚠️ Mercado fechado! Aberto à Tarde, Anoitecer e Noite.</div>';$('mkt-prices').textContent='';show('s-market');return;}
+    this.renderMarket();show('s-market');
+  },
+  renderMarket:function(){
+    var inv=Object.entries(S.inv).filter(function(kv){return kv[1]>0;});
+    $('mkt-body').innerHTML=!inv.length?
+      '<div class="infobox">Sem produção para vender. Vá à fazenda!</div>':
+      inv.map(function(kv){
+        var pid=kv[0],qty=kv[1];
+        var cr=CROPS.find(function(c){return c.id===pid;});
+        var an=ANIMALS.find(function(a){return a.pid===pid;});
+        var nm=cr?cr.n:(an?an.pn:(pid==='peixe'?'Peixe':pid));
+        var em=cr?cr.e:(an?an.prod:(pid==='peixe'?'🐟':'📦'));
+        var base=S.mktPrices[pid]||(cr?cr.sell:(an?an.pp:80));
+        var fp=Math.round(base*S.eventPm*(S.machines.has('caminhao')?1.2:1));
+        return '<div class="mkti">'+
+          '<span class="mkte">'+em+'</span>'+
+          '<div class="mktin">'+
+            '<div class="mktn">'+nm+'</div>'+
+            '<div class="mktp">'+fmt(fp)+'/un'+(S.machines.has('caminhao')?' 🚚+20%':'')+(S.eventPm!==1?' ×'+S.eventPm.toFixed(2):'')+' • '+qty+'×='+fmt(qty*fp)+'</div>'+
+          '</div>'+
+          '<button class="btnsl mkt-sell-btn" data-id="'+pid+'">Vender</button>'+
+        '</div>';
+      }).join('');
+    document.querySelectorAll('.mkt-sell-btn').forEach(function(btn){
+      btn.addEventListener('click',function(){G.sell(btn.getAttribute('data-id'));});
+    });
+    var allItems=CROPS.concat(ANIMALS.map(function(a){return{id:a.pid,e:a.prod,n:a.pn,sell:a.pp};}));
+    allItems.push({id:'peixe',e:'🐟',n:'Peixe',sell:80});
+    $('mkt-prices').innerHTML=allItems.map(function(c){return(c.e||'')+c.n+':<strong style="color:var(--gold)">'+(S.mktPrices[c.id]?fmt(S.mktPrices[c.id]):fmt(c.sell))+'</strong>';}).join(' • ');
+  },
+  sell:function(pid){
+    var qty=S.inv[pid]||0;if(!qty)return;
+    var cr=CROPS.find(function(c){return c.id===pid;});
+    var an=ANIMALS.find(function(a){return a.pid===pid;});
+    var base=S.mktPrices[pid]||(cr?cr.sell:(an?an.pp:80));
+    var fp=Math.round(base*S.eventPm*(S.machines.has('caminhao')?1.2:1));
+    var earned=qty*fp;
+    S.money+=earned;S.st.sold+=earned;S.inv[pid]=0;
+    addXP(Math.ceil(qty*2));checkAll();updateHUD();
+    toast('💰 +'+fmt(earned)+' vendido!',false,true);this.renderMarket();
+  },
+  applyEv:function(idx){
+    var ev=S.pendingEv;if(!ev)return;
+    var ch=ev.ch[idx];
+    if(S.money<ch.c){toast('💸 Sem dinheiro!',true);return;}
+    S.money-=ch.c;
+    if(ch.gm!=null) S.eventGm=ch.gm;
+    if(ch.soil){for(var i=0;i<S.cellsUnlocked;i++) S.soil[i]=Math.max(0,S.soil[i]+ch.soil);}
+    if(ch.staDrain) S.stamina=Math.max(0,S.stamina-ch.staDrain);
+    if(ch.useVac&&S.inputs['vacina']>0) S.inputs['vacina']--;
+    if(ch.sickRisk&&Math.random()>.5){
+      var arr=Array.from(S.animals);
+      if(arr.length){S.animalSick.add(arr[rnd(0,arr.length-1)]);toast('🦠 Animal ficou doente!',true);}
+    }
+    updateHUD();checkAll();
+    toast('Decisão tomada! Produção: '+Math.round((ch.gm||1)*100)+'%',ch.gm<0.8||ch.soil<-14,(!ch.c&&(ch.gm||1)>=1));
+    this.goMap();
+  },
+  bossAct:function(idx){
+    var b=S.activeBoss;if(!b)return;
+    if(S.stamina<1){toast('⚡ Sem stamina!',true);renderBoss();return;}
+    var a=b.actions[idx];
+    if(S.money<(a.cost||0)){toast('💸 Sem dinheiro!',true);return;}
+    S.money-=a.cost||0;S.stamina--;
+    var dmg=rnd(a.dmg[0],a.dmg[1]);
+    b.hp=Math.max(0,b.hp-dmg);
+    S.battleLog.push({tp:'hit',tx:'⚔️ '+a.l+': '+dmg+' de dano!'});
+    if(b.hp<=0){this.bossWin();return;}
+    var bAtk=a.def?Math.round(b.atk*.35):rnd(b.atk-4,b.atk+5);
+    var loss=bAtk*7;
+    S.money=Math.max(0,S.money-loss);
+    S.battleLog.push({tp:'dmg',tx:'💥 '+b.n+' atacou! -'+fmt(loss)});
+    if(bAtk>b.atk&&S.stamina>0){S.stamina--;S.battleLog.push({tp:'dmg',tx:'😵 Cansativo! -1⚡'});}
+    updateHUD();renderBoss();
+  },
+  // FIX #7: bossWin salva referencia local antes de zerar activeBoss
+  bossWin:function(){
+    var b=Object.assign({},S.activeBoss);
+    S.activeBoss=null;
+    S.bosses.add(b.id);S.money+=b.reward.money;addXP(b.reward.xp);
+    if(b.reward.seeds){Object.entries(b.reward.seeds).forEach(function(kv){S.seeds[kv[0]]=(S.seeds[kv[0]]||0)+kv[1];});}
+    if(b.reward.machine) S.machines.add(b.reward.machine);
+    if(b.reward.item) S.inputs[b.reward.item]=(S.inputs[b.reward.item]||0)+(b.reward.qty||1);
+    if(b.id==='epidemia') S.animalSick.clear();
+    checkAll();updateHUD();
+    $('boss-body').innerHTML=
+      '<div class="card green" style="text-align:center;padding:18px">'+
+        '<div style="font-size:46px;margin-bottom:8px">🏆</div>'+
+        '<div style="font-size:15px;font-weight:800;color:var(--mint)">Vitória!</div>'+
+        '<div style="font-size:11px;color:#ddf0c8;margin-top:5px">'+b.reward.msg+'</div>'+
+      '</div>'+
+      '<button class="btnf" id="btn-boss-cont">🗺️ Continuar →</button>';
+    $('btn-boss-cont').addEventListener('click',function(){G.goMap();});
+    toast('🏆 Derrotou '+b.n+'!',false,true);
+  },
+  goMissions:function(){checkAll();this.renderMiss();show('s-missions');},
+  renderMiss:function(){
+    $('miss-list').innerHTML=MISSIONS.map(function(m){
+      var done=S.missions.completed.has(m.id),prog=S.missions.progress[m.id]||0;
+      var g=m.t==='item'?m.g.qty:(typeof m.g==='number'?m.g:1);
+      var pct=Math.min(100,Math.round(prog/g*100));
+      return '<div class="missi '+(done?'done':'active')+'">'+
+        '<span class="mie">'+m.e+'</span>'+
+        '<div class="mii">'+
+          '<div class="min">'+m.n+(m.unlock?' 🔓':'')+'</div>'+
+          '<div class="mid">'+m.d+'</div>'+
+          '<div class="mip">'+(done?'✓ Completa!':prog+'/'+g+' ('+pct+'%) • +'+fmt(m.r)+' +'+m.xp+'XP')+'</div>'+
+        '</div>'+
+        '<span class="mic">'+(done?'✅':'⬜')+'</span>'+
+      '</div>';
+    }).join('');
+    $('ach-grid').innerHTML=ACHIEVEMENTS.map(function(a){
+      return '<div class="achc '+(S.achievements.has(a.id)?'ul':'lk2')+'">'+
+        '<div class="ache">'+a.e+'</div>'+
+        '<div class="achn">'+a.n+'</div>'+
+        '<div class="achd">'+a.d+'</div>'+
+      '</div>';
+    }).join('');
+  },
+  // FIX #8: goNPC verifica se S está inicializado antes de acessar knownNpcs
+  goNPC:function(id){
+    if(!S||!S.knownNpcs){toast('Inicie o jogo primeiro!',true);return;}
+    id=id||'agrinho';
+    var npc=NPCS.find(function(n){return n.id===id;})||NPCS[0];
+    S.knownNpcs.add(id);
+    $('npc-title').textContent=npc.e+' '+npc.n;
+    $('npc-sub').textContent=npc.r;
+    var speeches={
+      agrinho:['"Gerencie bem sua stamina — o campo não perdoa o desperdício!"','"Solo cuidado é a base de boa safra."','"Armazém cheio significa perda. Venda antes de colher!"','"Cada chefe derrotado ensina sobre resiliência."'],
+      ana:['"Vacine seus animais regularmente. Prevenção custa menos que cura."','"Animais doentes não produzem. Fique atento!"'],
+      carlos:['"O trator avançado muda o jogo. Vale o investimento!"','"Energia solar dá stamina bônus. Sustentabilidade que rende!"'],
+      joao:['"Os preços variam todo dia. Venda quando estiverem altos!"','"O caminhão valoriza sua produção em 20%. Transporte é lucro!"'],
+    };
+    var tips=[
+      'Stamina: '+S.stamina+'/'+MAX_STA+' — plante estrategicamente.',
+      'Solo médio: '+avgSoil()+'% — use fertilizante abaixo de 40%.',
+      'Armazém: '+stoUsed()+'/'+maxSto()+' — compre o Silo para aumentar.',
+      'Dia '+S.day+'/'+TOTAL_DAYS+' — planeje suas ações!',
+      'Dormir recupera toda a stamina. Use o botão "Dormir" no mapa.',
+    ];
+    var sp=(speeches[id]||speeches.agrinho)[S.day%4];
+    var tip=tips[S.day%5];
+    var extraHtml='';
+    if(id==='ana'&&S.animalSick.size>0){
+      extraHtml='<button class="btnf" id="btn-ana-cure" style="background:#2a6a9a;color:#fff">💉 Ana cura todos (-R$300)</button>';
+    }
+    if((S.inputs['energy']||0)>0){
+      extraHtml+='<button class="btnf" id="btn-use-energy" style="background:rgba(80,180,255,.2);color:#aaddff;border:1px solid rgba(80,180,255,.3)">⚡ Usar Energético (+3 Stamina)</button>';
+    }
+    $('npc-body').innerHTML=
+      '<div class="npcd">'+
+        '<div class="npch"><span class="npca">'+npc.e+'</span>'+
+          '<div><div class="npcn">'+npc.n+'</div><div class="npcr">'+npc.r+'</div></div>'+
+        '</div>'+
+        '<div class="npcs">'+sp+'</div>'+
+      '</div>'+
+      '<div class="infobox"><strong style="color:var(--gold);display:block;margin-bottom:4px">💡 Dica de Hoje:</strong>'+tip+'</div>'+
+      '<div class="infobox"><strong style="color:var(--gold);display:block;margin-bottom:4px">📊 Status:</strong>'+
+        '⚡'+S.stamina+'/'+MAX_STA+' • 📦'+stoUsed()+'/'+maxSto()+' • 🌱'+avgSoil()+'% solo • Nv.'+S.level+'<br>'+
+        '🧪'+(S.inputs['ferti']||0)+' • 🛡️'+(S.inputs['pestic']||0)+' • 💉'+(S.inputs['vacina']||0)+' • ⚡'+(S.inputs['energy']||0)+
+      '</div>'+
+      extraHtml;
+    var anaCure=$('btn-ana-cure');
+    if(anaCure) anaCure.addEventListener('click',function(){if(S.money<300){toast('💸',true);return;}S.money-=300;S.animalSick.clear();updateHUD();toast('💉 Ana curou todos! -R$300',false,true);G.goNPC('ana');});
+    var useEn=$('btn-use-energy');
+    if(useEn) useEn.addEventListener('click',function(){if(!(S.inputs['energy']>0))return;S.inputs['energy']--;S.stamina=Math.min(MAX_STA,S.stamina+3);updateHUD();toast('⚡ +3 Stamina!',false,true);G.goNPC('agrinho');});
+    show('s-npc');
+  },
+  endGame:function(){
+    $('hud').classList.remove('on');$('nav').classList.remove('on');
+    var bonus=0;
+    Object.entries(S.inv).forEach(function(kv){
+      var pid=kv[0],qty=kv[1];
+      var cr=CROPS.find(function(c){return c.id===pid;});
+      var an=ANIMALS.find(function(a){return a.pid===pid;});
+      bonus+=qty*(S.mktPrices[pid]||(cr?cr.sell:(an?an.pp:80)));
+    });
+    var net=S.money+bonus;
+    $('es').textContent=fmt(net);
+    var rank,icon,head;
+    if(S.missions.completed.size>=10){rank='🌟 Mestre do Agro Forte';icon='🌟';head='Você é referência nacional!';}
+    else if(net>=30000){rank='🏆 Magnata do Agronegócio';icon='🏆';head='Referência Nacional!';}
+    else if(net>=18000){rank='🚜 Grande Produtor Paranaense';icon='🚜';head='Excelente jornada!';}
+    else if(net>=10000){rank='🌾 Fazendeiro Experiente';icon='🌾';head='Boa safra!';}
+    else if(net>=4000) {rank='🌿 Produtor Rural';icon='🌿';head='Missão cumprida!';}
+    else if(net>=1000) {rank='🌱 Pequeno Agricultor';icon='🌱';head='Continue aprendendo!';}
+    else               {rank='😢 Falência';icon='😢';head='A fazenda faliu...';$('er').classList.add('fail');}
+    $('ei').textContent=icon;$('eh').textContent=head;$('er').textContent=rank;
+    $('estats').innerHTML=
+      '<div class="fsc"><strong>'+S.st.harvest+'</strong><span>Unidades colhidas</span></div>'+
+      '<div class="fsc"><strong>'+fmt(S.st.sold)+'</strong><span>Total vendido</span></div>'+
+      '<div class="fsc"><strong>'+S.level+'</strong><span>Nível atingido</span></div>'+
+      '<div class="fsc"><strong>'+S.missions.completed.size+'/10</strong><span>Missões completas</span></div>'+
+      '<div class="fsc"><strong>'+S.achievements.size+'/'+ACHIEVEMENTS.length+'</strong><span>Conquistas</span></div>'+
+      '<div class="fsc"><strong>'+S.bosses.size+'/3</strong><span>Chefes derrotados</span></div>'+
+      '<div class="fsc"><strong>'+avgSoil()+'%</strong><span>Saúde final do solo</span></div>'+
+      '<div class="fsc"><strong>'+S.cellsUnlocked+'/'+MAX_CELLS+'</strong><span>Parcelas desbloqueadas</span></div>';
+    show('s-end');
+  },
+};
+
+// ═══════════════════════════════════════════
+//  TUTORIAL
+// ═══════════════════════════════════════════
+var TUT_N = 7, tutIdx = 0;
+
+function tutBuild() {
+  var dots = $('tut-dots');
+  dots.innerHTML = '';
+  for (var i = 0; i < TUT_N; i++) {
+    var d = document.createElement('div');
+    d.className = 'tut-dot' + (i === 0 ? ' cur' : '');
+    d.setAttribute('data-i', i);
+    d.addEventListener('click', function() { tutGo(+this.getAttribute('data-i')); });
+    dots.appendChild(d);
+  }
+}
+
+function tutGo(n) {
+  tutIdx = Math.max(0, Math.min(TUT_N - 1, n));
+  $('tut-track').style.transform = 'translateX(-' + (tutIdx * 100) + '%)';
+  document.querySelectorAll('.tut-dot').forEach(function(d, i) {
+    d.className = 'tut-dot' + (i === tutIdx ? ' cur' : i < tutIdx ? ' ok' : '');
+  });
+  $('tut-ctr').textContent = (tutIdx + 1) + '/' + TUT_N;
+  $('tut-prev').style.opacity = tutIdx === 0 ? '0.3' : '1';
+  $('tut-prev').style.pointerEvents = tutIdx === 0 ? 'none' : 'auto';
+  $('tut-next').textContent = tutIdx >= TUT_N - 1 ? '🚜 Começar!' : 'Próximo →';
+}
+
+function tutEnd() {
+  $('s-tutorial').classList.remove('on');
+  $('s-start').classList.add('on');
+}
+
+// ═══════════════════════════════════════════
+//  EVENT LISTENERS
+// ═══════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',function(){
+  tutBuild();
+  tutGo(0);
+  $('tut-next').addEventListener('click', function() {
+    if (tutIdx >= TUT_N - 1) tutEnd(); else tutGo(tutIdx + 1);
+  });
+  $('tut-prev').addEventListener('click', function() { tutGo(tutIdx - 1); });
+  $('tut-skip').addEventListener('click', tutEnd);
+  // swipe mobile
+  var tx0 = 0;
+  var outer = $('tut-track');
+  outer.addEventListener('touchstart', function(e){ tx0 = e.touches[0].clientX; }, {passive:true});
+  outer.addEventListener('touchend', function(e){
+    var dx = tx0 - e.changedTouches[0].clientX;
+    if (Math.abs(dx) > 40) { if (dx > 0) tutGo(tutIdx+1); else tutGo(tutIdx-1); }
+  }, {passive:true});
+
+
+  $('btn-start').addEventListener('click',function(){G.start();});
+  $('btn-sleep').addEventListener('click',function(){G.sleep();});
+  $('btn-farm-map').addEventListener('click',function(){G.goMap();});
+  $('btn-shop-map').addEventListener('click',function(){G.goMap();});
+  $('btn-mkt-map').addEventListener('click',function(){G.goMap();});
+  $('btn-miss-map').addEventListener('click',function(){G.goMap();});
+  $('btn-npc-map').addEventListener('click',function(){G.goMap();});
+  $('btn-restart').addEventListener('click',function(){G.restart();});
+  $('nb-map').addEventListener('click',function(){G.goMap();});
+  $('nb-farm').addEventListener('click',function(){G.goFarm();});
+  $('nb-shop').addEventListener('click',function(){G.goShop();});
+  $('nb-mkt').addEventListener('click',function(){G.goMarket();});
+  $('nb-miss').addEventListener('click',function(){G.goMissions();});
+  $('nb-npc').addEventListener('click',function(){G.goNPC('agrinho');});
+  $('nb-npcs').addEventListener('click',function(){
+    // FIX #8: verificar estado antes de acessar
+    if(!S||!S.knownNpcs){toast('Inicie o jogo primeiro!',true);return;}
+    var npcHtml=NPCS.map(function(n){
+      return '<div class="npcd" style="cursor:pointer;margin-bottom:8px" id="npcd-'+n.id+'">'+
+        '<div class="npch">'+
+          '<span class="npca">'+n.e+'</span>'+
+          '<div><div class="npcn">'+n.n+'</div><div class="npcr">'+n.r+'</div></div>'+
+          '<span style="font-size:18px;margin-left:auto">'+(S.knownNpcs.has(n.id)?'✓':S.level>=n.lvl?'→':'🔒')+'</span>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+    $('npc-title').textContent='👥 Personagens';
+    $('npc-sub').textContent='Converse com os especialistas';
+    $('npc-body').innerHTML=npcHtml;
+    NPCS.forEach(function(n){
+      var el=$('npcd-'+n.id);
+      if(el) el.addEventListener('click',function(){G.goNPC(n.id);});
+    });
+    show('s-npc');
+  });
+});
+</script>
+</body>
+</html>
